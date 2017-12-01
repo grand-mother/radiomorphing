@@ -1,0 +1,7 @@
+# Ignore Python bytecode
+*.pyc
+*.pyo
+
+# Ignore temporary and output data
+examples/data/InterpolatedSignals/*.trace
+examples/data/GrandEventADetailed2/scaled_*
