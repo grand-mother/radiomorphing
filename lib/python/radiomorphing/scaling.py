@@ -158,7 +158,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 
     #Backtrafo of efield from shower coord (1,2,3) in xyz (4,5,6) after scaling and/or stretching using the target angles
     Rt = get_rotation(zen2, az2, phigeo, thetageo).T
-    v2 = Rt[0,:]
+    v2 = Rt[:,0]
     txt1[:,1:] = np.dot(EshowerA, Rt)
 
 
@@ -252,7 +252,6 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     # new position vector:
     x2= decay - v2 * (Xmax_distance+ dist1) # to account for going from Zhaires to GRAND conv
 
-
  ##############################   Backtrafo to XYZ
     ### Now the new 'stretched' positions are calculated in the xyz components, backrotation
     stretch2 = np.zeros([len(pos[:,1]),3])
@@ -263,9 +262,9 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
         stretch2[m,:] = GetXYZ(pos[m])
     #stretch2[l]  # the new wanted antenna position after stretching
 
-    if l==0:
-        print 'position ref to Xmax: ', x2,' position decay: ', decay, ' shower direction: ', v2, ' distance to Xmax: ', dist1, ' distance between Xmax and plane: ', Xmax_distance
-        print len(x2), l, len(stretch2),
+    #if l==0:
+        #print 'position ref to Xmax: ', x2,' position decay: ', decay, ' shower direction: ', v2, ' distance to Xmax: ', dist1, ' distance between Xmax and plane: ', Xmax_distance
+        #print len(x2), l, len(stretch2),
 
 
     #print ' scaling done , positions ', stretch2[l]
@@ -381,8 +380,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
             args = (pos_new[i,0], pos_new[i,1], pos_new[i,2])
             print >> file_ant, "%.3f	%.3f	%.3f" % args
 
-    print end, "antennas scaled"
-    print "antenna positions saved in:", posfile_new
+    print end, "antennas scaled, positions saved in:", posfile_new
 
 
 def scale(sim_dir, primary, energy, zenith, azimuth, injection_height):
