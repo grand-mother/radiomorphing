@@ -37,17 +37,27 @@ def _ProjectPointOnPlane(a,b,d, p):
     point= p+ t*n
     return point
 
-def interpolate(path0, path1, path2):
+def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
     """Interpolate all traces from the (rescaled) closest neighbours
 
     Args:
         path0 (str): path to file with desired antenna positions
         path1 (str): path to the simulations
         path2 (str): path to the folder for final traces
+        zenith (float): zenith angle of the morphed shower, in degrees
+        azimuth (float): azimuth angle of the morphed shower, in degrees
+        scaled (bool): flag for interpolating from a non scaled shower
     """
 
+    # Check the consistency of the arguments
+    if scaled:
+        if (zenith is None) or (azimuth is None):
+            raise ValueError("missing zenith or azimuth")
+    else:
+        if (zenith is not None) or (azimuth is not None):
+            raise ValueError("zen / az is not supported for non scaled showers")
+
     DISPLAY=0
-    SCALED=1 # scaled traces shall be read in
 
     #####
     # add request whether f1 and f2 as freqeuncies are handed over
@@ -82,16 +92,20 @@ def interpolate(path0, path1, path2):
             if not os.path.exists(os.path.join(path1, run)):
                 continue
             if not sims:
+                # Get the settings of the reference shower
                 zen, az, _, dist1 = map(float, args[3:])
             sims.append(run)
-            
+
+    if scaled:
+        # Override zenith and azimuth with the morphed shower settings
+        zen, az = zenith, azimuth
 
     # Conversion from Aires to GRAND convention
     zen = np.deg2rad(180. - zen)
     az = np.deg2rad(180. + az)
 
     ### scaled traces shall be read in
-    if SCALED == 1:
+    if scaled:
         path1 = os.path.join(path1, "scaled_")
 
     ########################## GET THE NEIGHBOURS
@@ -658,4 +672,4 @@ def process(sim_dir, shower, antennas, out_dir):
     scale(sim_dir, **shower)
 
     # interpolate the traces.
-    interpolate(antennas, sim_dir, out_dir)
+    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"])
