@@ -1,16 +1,17 @@
 #!/usr/bin/env python
-import os
+from os.path import split, join, realpath
 import sys
 
 # Expand the PYTHONPATH and import the radiomorphing package
-module_path = os.path.join(os.path.split(__file__)[0], "..", "lib", "python")
-sys.path.append(os.path.realpath(module_path))
+root_dir = realpath(join(split(__file__)[0], ".."))
+sys.path.append(join(root_dir, "lib", "python"))
 import radiomorphing
 
 # Settings of the radiomorphing
-sim_dir = "data/GrandEventADetailed2"
-out_dir = "data/InterpolatedSignals"
-antennas = "antpos_desired2.dat"
+data_dir = join(root_dir, "examples", "data")
+sim_dir = join(data_dir, "GrandEventADetailed2")
+out_dir = join(data_dir, "InterpolatedSignals")
+antennas = join(out_dir, "antpos_desired2.dat")
 
 shower = {
     "primary" : "electron",
@@ -20,4 +21,4 @@ shower = {
     "injection_height" : 2000. }   # m
 
 # Perform the radiomorphing
-radiomorphing.process(sim_dir, shower, os.path.join(out_dir, antennas), out_dir)
+radiomorphing.process(sim_dir, shower, antennas, out_dir)
