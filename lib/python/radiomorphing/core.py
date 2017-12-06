@@ -84,7 +84,7 @@ def interpolate(path0, path1, path2):
             if not sims:
                 zen, az, _, dist1 = map(float, args[3:])
             sims.append(run)
-    print sims
+            
 
     # Conversion from Aires to GRAND convention
     zen = np.deg2rad(180. - zen)
@@ -102,7 +102,6 @@ def interpolate(path0, path1, path2):
     positions_sims=np.zeros([len(sims),120,3])
     print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
-        print sims[i]
         #if i==0: ## Fixed 14.11.2017
             #print "WARNING: non-scaled pulses loaded... change if needed, eg by handing over another path where scaled are saved"
         #posfile = path1 + '/scaled_'+str(sims[i]) +'/antpos.dat'
