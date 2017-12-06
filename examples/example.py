@@ -8,8 +8,8 @@ sys.path.append(os.path.realpath(module_path))
 import radiomorphing
 
 # Settings of the radiomorphing
-sim_dir = "examples/data/GrandEventADetailed2"
-out_dir = "examples/data/InterpolatedSignals"
+sim_dir = "data/GrandEventADetailed2"
+out_dir = "data/InterpolatedSignals"
 antennas = "antpos_desired2.dat"
 
 shower = {
