@@ -49,6 +49,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         scaled (bool): flag for interpolating from a non scaled shower
     """
 
+
     # Check the consistency of the arguments
     if scaled:
         if (zenith is None) or (azimuth is None):
@@ -94,15 +95,18 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
             if not sims:
                 # Get the settings of the reference shower
                 zen, az, _, dist1 = map(float, args[3:])
+                # Conversion from Aires to GRAND convention
+                zen = np.deg2rad(180. - zen)
+                az = np.deg2rad(180. + az)
             sims.append(run)
 
     if scaled:
         # Override zenith and azimuth with the morphed shower settings
-        zen, az = zenith, azimuth
+        zen, az = zenith, azimuth # in deg      
+        az=np.deg2rad(az)
+        zen=np.deg2rad(zen)
 
-    # Conversion from Aires to GRAND convention
-    zen = np.deg2rad(180. - zen)
-    az = np.deg2rad(180. + az)
+    print("test ", zen, az)
 
     ### scaled traces shall be read in
     if scaled:
