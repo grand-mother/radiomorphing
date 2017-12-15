@@ -626,7 +626,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         for i in range( 0, len(xnew_desiredx) ):
 
             #print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
-                print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
+                print >>FILE,"%3.2f %1.2e %1.2e %1.2e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i]) # as .2e in simulation output
 
 
 
