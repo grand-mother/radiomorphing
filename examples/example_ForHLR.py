@@ -29,7 +29,8 @@ data_dir = join(root_dir, "examples", "data") # will be in shared storage $PROJE
 simref_dir = join(data_dir, "GrandEventADetailed2") # will be copied from $PROJECT to $TMP, scaled_Evet* can be stored there since it will be overwritten for each event
 
 # ATTENTION: set here the path to the temporary storage at evry core, for testing set to test_dir created
-tmp_dir= join(root_dir, "examples", "test_temp") # "$TMP" at core
+tmp_dir=sys.argv[2] #join(root_dir, "examples", "test_temp") # "$TMP" at core
+
 if not os.path.exists(tmp_dir): # later this is nit necessary with $TMP
     os.makedirs(tmp_dir)
     print "PATH to TMP ", tmp_dir 
@@ -42,7 +43,7 @@ print "path to sim " , sim_dir
 #t1=time.time()
 #print " time needed for copy :", t1-t0
     
-### copy sim_dir to savedir but keep name of sim_dir
+particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta
 
 #j=0
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
@@ -93,17 +94,18 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
                 ### ENERGY
                 ep_array=np.zeros(len(event["decay"])-1)
                 for i in range(1, len(event["decay"])): #len(event["decay"])-1 # gives you the number of decay products in event
-                    pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
-                    ep_array[i-1]=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
+                    if float(event["decay"][i][0]) in particle_list: # just for valid particles 
+                        pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
+                        ep_array[i-1]=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
                     print "particle ", str(i), " ", ep_array[i-1]*1e-9 #np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)* 1.e-9 
                 ep= np.sum(ep_array)* 1.e-9 # GeV in EeV
                 print "energy in EeV: ", ep
                 
                 ### PID primary
                 #part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
-                particle=int(np.argmax(ep_array) +1) # not forget about the inital neutrino
+                particle=int(np.argmax(ep_array) +1) # not forget about the inital neutrino and array start with 0
                 PID= float(event["decay"][int(np.argmax(ep_array) +1)][0])
-                el_list=[22.0,11.0,15.0,13.0, 111.0] #'22.0':'gamma', '11.0': 'electron',  '15.0':'tau', '13.0':'muon', '111.0': 'pi0'
+                el_list=[22.0, 11.0, -11.0, 111.0] #'22.0':'gamma', '11.0': 'electron', '-11':positron,  '111.0': 'pi0'
                 if PID in el_list:
                     primary="electron"
                 else: # pion-like
@@ -149,56 +151,56 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
             #### Then, move it after antenna and take RM into the loop
             
             for i in range(1, len(event["decay"])): #len(event["decay"])-1 # gives you the number of decay products in event
+                if float(event["decay"][i][0]) in particle_list: # just for valid particles
+                    pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
+                    ep=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
+                    ep*=1.e-9 #in EeV
+                    print "energy in EeV: ", ep
+                    
+                    ### PID primary
+                    #part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
+                    PID= float(event["decay"][i][0])
+                    el_list=[22.0,11.0,-11.0, 111.0] #'22.0':'gamma', '11.0': 'electron', '-11.0' positron: '111.0': 'pi0'
+                    if PID in el_list:
+                        primary="electron"
+                    else: # pion-like
+                        primary="pion"
+                    print primary
+                    
+                    
+                    ## create a folder in $TMP for each event
+                    out_dir = join(tmp_dir, "InterpolatedSignals", str(event["tag"])) # will be created in $TMP, will be deleted after each event
+                    out_dir=out_dir+"_"+str(i) # folder for each decay particle
+                    if not os.path.exists(out_dir):
+                        os.makedirs(out_dir)
+                    print "folder ", out_dir 
+                    
+                
+                ##save ANTENNA POSITIONS in anpos.dat for each event
+                    antennas = join(out_dir, "antpos.dat") # file of list of desired antennas position -> in out_dir at $TMP
+                    correction= np.array([decay_pos[0], decay_pos[1], 0.])
+                    print "correction: ",correction
+                    print "antenna: ", event["antennas"][0]
+                    np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
+                    print "antenna corrected: ", event["antennas"][0]-correction
+                    
 
-                pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
-                ep=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
-                ep*=1.e-9 #in EeV
-                print "energy in EeV: ", ep
-                
-                ### PID primary
-                #part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
-                PID= float(event["decay"][i][0])
-                el_list=[22.0,11.0,15.0,13.0, 111.0] #'22.0':'gamma', '11.0': 'electron',  '15.0':'tau', '13.0':'muon', '111.0': 'pi0'
-                if PID in el_list:
-                    primary="electron"
-                else: # pion-like
-                    primary="pion"
-                print primary
-                
-                
-                ## create a folder in $TMP for each event
-                out_dir = join(tmp_dir, "InterpolatedSignals", str(event["tag"])) # will be created in $TMP, will be deleted after each event
-                out_dir=out_dir+"_"+str(i) # folder for each decay particle
-                if not os.path.exists(out_dir):
-                    os.makedirs(out_dir)
-                print "folder ", out_dir 
-                
-            
-            ##save ANTENNA POSITIONS in anpos.dat for each event
-                antennas = join(out_dir, "antpos.dat") # file of list of desired antennas position -> in out_dir at $TMP
-                correction= np.array([decay_pos[0], decay_pos[1], 0.])
-                print "correction: ",correction
-                print "antenna: ", event["antennas"][0]
-                np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
-                print "antenna corrected: ", event["antennas"][0]-correction
-                
+                    ##### Start radio morphing
 
-                ##### Start radio morphing
+                    shower = {
+                            "primary" : primary,       # reference shower "electron" at the moment
+                            "energy" : ep,               # EeV
+                            "zenith" : theta,               # deg (GRAND frame)
+                            "azimuth" : azimuth,                # deg (GRAND frame)
+                            "injection_height" : height }   # m
 
-                shower = {
-                        "primary" : primary,       # reference shower "electron" at the moment
-                        "energy" : ep,               # EeV
-                        "zenith" : theta,               # deg (GRAND frame)
-                        "azimuth" : azimuth,                # deg (GRAND frame)
-                        "injection_height" : height }   # m
-
-                    # Perform the radiomorphing
-                radiomorphing.process(sim_dir, shower, antennas, out_dir)
-                
-                #NOTE: traces of shubshowers have to be added up for comparison
-                
-                # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
-                shutil.move(out_dir, data_dir) 
+                        # Perform the radiomorphing
+                    radiomorphing.process(sim_dir, shower, antennas, out_dir)
+                    
+                    #NOTE: traces of shubshowers have to be added up for comparison
+                    
+                    # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
+                    shutil.move(out_dir, data_dir) 
         
 
 try:
