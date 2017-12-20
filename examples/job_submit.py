@@ -21,7 +21,7 @@ import os
 path_json= '/project/fh1-project-huepra/le6232/data/retro/flat-100x100/fb4e031/'
 
 # path to the scripts for radiomorphing
-path_script='/project/fh1-project-huepra/qc8087/soft/radiomorphing/examples/'
+path_script='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
 # python ${path_script}/example_ForHLR.py ${path_json}/events.29939363.1.json 
 
 
