@@ -59,9 +59,9 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
    #print event["tau_at_decay"] # all information about vertex of decay: energy before decay in GeV, position in the local [x, y, z], direction of propagation, [ux, uy, uz]
    #print event["tau_at_decay"][2]
    
-   #### to choose one specific event from a json file
+   #### to choose one specific event from a json file or test running on cluster
    #j=j+1
-   #if j==3: 
+   #if j<43: 
 
             ###DECAY
         decay_pos=event["tau_at_decay"][1]
@@ -80,7 +80,7 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
         x=np.array([1.,0.,0.]) #NS
         y=np.array([0.,1.,0.]) #EW
         proj_v= np.dot(v,x)*x + np.dot(v,y)*y
-        print proj_v
+#        print proj_v
         azimuth = np.degrees(np.arccos(np.dot(proj_v, x))) # azimuth in GRAND conv., rt NORTH
         if proj_v[1]<0.: # y component of projection negativ, means azimuth >180deg
             azimuth = 360.-azimuth
@@ -97,7 +97,7 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
                     if float(event["decay"][i][0]) in particle_list: # just for valid particles 
                         pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
                         ep_array[i-1]=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
-                    print "particle ", str(i), " ", ep_array[i-1]*1e-9 #np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)* 1.e-9 
+                    print "particle ", str(i), "PID:",event["decay"][i][0]," energy in EeV: ", ep_array[i-1]*1e-9 #np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)* 1.e-9 
                 ep= np.sum(ep_array)* 1.e-9 # GeV in EeV
                 print "energy in EeV: ", ep
                 
@@ -203,9 +203,9 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
                     shutil.move(out_dir, data_dir) 
         
 
-try:
-    shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
-    print "TMP deleted"
-except IOError:
+#try:
+    #shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
+    #print "TMP deleted"
+#except IOError:
     print "Job done"
 
