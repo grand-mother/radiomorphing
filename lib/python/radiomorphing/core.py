@@ -106,7 +106,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         az=np.deg2rad(az)
         zen=np.deg2rad(zen)
 
-    print("test ", zen, az)
 
     ### scaled traces shall be read in
     if scaled:
@@ -118,13 +117,13 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
     #### Finding the Neighbours:  In principal one would like to check which star shape pattern are the closest etc.
     # it reads in all star shape pattern positions from the simulations you hand over via simulations.dat
     positions_sims=np.zeros([len(sims),120,3])
-    print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
+    #print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
         #if i==0: ## Fixed 14.11.2017
             #print "WARNING: non-scaled pulses loaded... change if needed, eg by handing over another path where scaled are saved"
         #posfile = path1 + '/scaled_'+str(sims[i]) +'/antpos.dat'
         posfile = path1 +str(sims[i]) +'/antpos.dat'
-        print posfile
+        #print posfile
         if DISPLAY==1:
             print posfile
         positions_sims[i,:,:]=np.loadtxt(posfile)
@@ -138,7 +137,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
     #ATTENTION herethere should go a LOOP over b over desired antenna position in the list and find always the closest neighbours and get the interpolated pulse shape
 
     for b in xrange(len(positions)):
-        print "##############  begin of interpolation at desired position ", b, ' at ',  positions[b]
+        #print "##############  begin of interpolation at desired position ", b, ' at ',  positions[b]
 
 
         # desired positions has to get projected on all the planes to get the orthogonal distances to the planes
@@ -274,17 +273,17 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         Inter_1, pos_1, d1 = get_neighbours(1, Inter_plane1)
 
         if (d0 > 120).any() or (d1 > 120).any():
-            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
+            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna "+str(b)+" skipped"
             continue
         try:
-            print pos_0[d0[3]]
+            p1=pos_0[d0[3]] # just to see if point exists
         except IndexError:
-            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
+            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna "+str(b)+" skipped"
             continue
         try:
-            print pos_1[d1[3]]
+            p2=pos_1[d1[3]] # just to see if point exists
         except IndexError:
-            print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
+            print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna "+str(b)+" skipped"
             continue
 
         if DISPLAY==1:
@@ -611,22 +610,22 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
 
 
         ## NOTE: This traces should be saved in some way similar to a#if.trace for and easier inclusion into the filtering process
-        print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
+#        print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
 
         #### lop over b as number of desired positions
         if full==1:
             name=path2+ '/a'+str(b)+'.trace'
-            print name
+#            print name
         else:
             name=path2+ "/a"+str(b)+'_'+str((f1*1e-6)) + '-' + str((f2*1e-6)) + 'MHz.dat'
             # add the Hilbert envelope later.... but just possible if all three components interpolated ### add thsi to name
-            print name
+#            print name
 
         FILE = open(name, "w+" )
         for i in range( 0, len(xnew_desiredx) ):
 
             #print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
-                print >>FILE,"%3.2f %1.2e %1.2e %1.2e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i]) # as .2e in simulation output
+                print >>FILE,"%.2f %1.3e %1.3e %1.3e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i]) # as .2e in simulation output
 
 
 

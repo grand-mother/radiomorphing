@@ -70,7 +70,7 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
     ai=0
     while X< Xmax_primary:
         i=i+1
-        ai=i*100. #m
+        ai=i*10. #100. #m
         hi= -Re+np.sqrt(Re**2. + ai**2. + hD**2. + 2.*Re*hD - 2*ai*np.cos(gamma) *(Re+hD))## cos(gamma)= + to - at 90dg
         deltah= abs(h-hi) #(h_i-1 - hi)= delta h
         h=hi # new height
@@ -127,8 +127,8 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 #SCALING
     kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo)
     kAmp=kE*kAz*kHeight
-    if l==0:
-        print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
+#    if l==0:
+#        print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
 
     #print 'Amplitude changed by kAmp= ' + str(kAmp), ' Position changed by kStretch= '+ str(kStretch)
 
@@ -288,8 +288,8 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     thetageo =(180.-27.05)*np.pi/180. # 152.95*np.pi/180. #27.05*np.pi/180.
                                       # (pointing down)-62.95
 
-    print ""
-    print "###############################  new plane gets scaled ... ", run
+#    print ""
+#    print "###############################  new plane gets scaled ... ", run
 
     path = os.path.join(sim_dir, run) # Path to the simulation run which
                                       # shall later be rescaled or so
@@ -306,12 +306,12 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
         print ", ".join(parameters)
 
     # Print the reference parameter values
-    print "# Reference shower", run
-    print_parameters(E1, dist1, zen1, az1, injh1)
+#    print "# Reference shower", run
+#    print_parameters(E1, dist1, zen1, az1, injh1)
 
     # Print the target parameter values
-    print "Target shower parameters"
-    print_parameters(E2, dist1, zen2, az2, injh2)
+#    print "Target shower parameters"
+#    print_parameters(E2, dist1, zen2, az2, injh2)
 
     # Convert the angles from degrees to radians
     zen1, az1, zen2, az2 = map(np.deg2rad, (zen1, az1, zen2, az2))
@@ -334,7 +334,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     end = positions.shape[0]
     #### loop over all antenna positions, outer positions should be skipped
     #### since then the interpolation doesnt work anymore
-    print os.path.join(path, "a0.trace")
+#    print os.path.join(path, "a0.trace")
     for l in np.arange(0, end):
         # always hand over all need parameters,1 3D pulse, and all antenna
         # positions
@@ -362,7 +362,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
             # Exyz are also in columns 456
             for i in range(0, len(txt3.T[0])):
                 args = (txt3.T[0,i], txt3.T[1,i], txt3.T[2,i], txt3.T[3,i])
-                print >> FILE, "%3.2f	%1.5e	%1.5e	%1.5e" % args
+                print >> FILE, "%.2f	%1.3e	%1.3e	%1.3e" % args
 
             ## in the last line of the file we wanna write the max. ampl of the
             ## hilbert envelope. Something like: amp exm eym ezm
