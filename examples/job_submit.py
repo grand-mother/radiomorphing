@@ -49,7 +49,7 @@ for i in range(0, len(json_file )):
         file.write('#---------------------\n')
         file.write('# Scheduler options\n')
         file.write('#---------------------\n')
-        file.write('#MSUB -q develop\n')
+        file.write('#MSUB -q singlenode\n')
         file.write('#MSUB -l nodes=1:ppn=1\n')
         file.write('#MSUB -l walltime=03:00:00\n')
         file.write('#MSUB -l pmem=1gb\n')
