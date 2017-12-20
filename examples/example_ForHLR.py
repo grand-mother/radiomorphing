@@ -4,7 +4,7 @@ from os.path import split, join, realpath
 import sys
 import numpy as np
 import shutil
-import time
+#import time
 
 
 ''' call that script via: python example.py *json
@@ -36,15 +36,15 @@ if not os.path.exists(tmp_dir): # later this is nit necessary with $TMP
 sim_dir=join(tmp_dir, "GrandEventADetailed2") # local copy of refernce shower at $TMP, plus folder which will contain the scaled traces 
 
 
-t0=time.time()
+#t0=time.time()
 shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
 print "path to sim " , sim_dir
-t1=time.time()
-print " time needed for copy :", t1-t0
+#t1=time.time()
+#print " time needed for copy :", t1-t0
     
 ### copy sim_dir to savedir but keep name of sim_dir
 
-j=0
+#j=0
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
 for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files contains a list of events which shall run on one node
@@ -201,7 +201,9 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
                 shutil.move(out_dir, data_dir) 
         
 
-
-shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
-print "TMP deleted"
+try:
+    shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
+    print "TMP deleted"
+except IOError:
+    print "Job done"
 
