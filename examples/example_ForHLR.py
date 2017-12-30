@@ -7,7 +7,7 @@ import shutil
 #import time
 
 
-''' call that script via: python example.py *json
+''' call that script via: python example.py *json path_to_TMP
     It will read in the information in the jso-file, event-by-event- and convert it to the nessary format of input for the radio morphing.
     For every event it creates a subfolder in $TMP/InterpolatedSignals/ having the name set by the event-tag for a later identification of the event. 
     The script produces teh needed antpos.dat in the event-folder, caclulated traces after interpolation saved in the same folder
@@ -38,17 +38,19 @@ sim_dir=join(tmp_dir, "GrandEventADetailed2") # local copy of refernce shower at
 
 
 #t0=time.time()
-shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
+if not os.path.exists(sim_dir):
+    shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
 print "path to sim " , sim_dir
 #t1=time.time()
 #print " time needed for copy :", t1-t0
     
 particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta
 
+print "json file : ", str(sys.argv[1])
 #j=0
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
-for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files contains a list of events which shall run on one node
+for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files contains a list of events which shall run on one node"
    #print event["tag"] # gives you the tag one after eachother, long
    #print event["decay"] #(pid, (momentum_x,, momentum_y, momentum_z)
    #print event["decay"][0] #returns the inital neutrino
@@ -74,7 +76,7 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
         print "decay position after correction: ", decay_pos
         
         
-        decay_altitude=decay_pos[3] #1000 #event["tau_at_decay"][1]
+        decay_altitude=event["tau_at_decay"][3] 
         print "decay decay_altitude: ", decay_altitude
         
         v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed  
