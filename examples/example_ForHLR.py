@@ -62,13 +62,20 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
    #### to choose one specific event from a json file or test running on cluster
    #j=j+1
    #if j<43: 
-
-            ###DECAY
+        print "\n"
+        print "Event ", str(event["tag"]), " started"
+                            
+                            
+        ###DECAY
         decay_pos=event["tau_at_decay"][1]
         height=decay_pos[2]
         print "decay position: ", decay_pos
         decay_pos=decay_pos+np.array([0.,0.,EARTH_RADIUS]) # corrected for earth radius
         print "decay position after correction: ", decay_pos
+        
+        
+        decay_altitude=decay_pos[3] #1000 #event["tau_at_decay"][1]
+        print "decay decay_altitude: ", decay_altitude
         
         v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed  
 
@@ -136,7 +143,8 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
                         "energy" : ep,               # EeV
                         "zenith" : theta,               # deg (GRAND frame)
                         "azimuth" : azimuth,                # deg (GRAND frame)
-                        "injection_height" : height }   # m
+                        "injection_height" : height,    # m
+                        "altitude" : decay_altitude}   # m
 
                     # Perform the radiomorphing
                 radiomorphing.process(sim_dir, shower, antennas, out_dir)
@@ -192,7 +200,8 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
                             "energy" : ep,               # EeV
                             "zenith" : theta,               # deg (GRAND frame)
                             "azimuth" : azimuth,                # deg (GRAND frame)
-                            "injection_height" : height }   # m
+                            "injection_height" : height ,    # m
+                            "altitude" : decay_altitude}   # m
 
                         # Perform the radiomorphing
                     radiomorphing.process(sim_dir, shower, antennas, out_dir)
@@ -207,5 +216,5 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
     #shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
     #print "TMP deleted"
 #except IOError:
-    print "Job done"
+print "Job done"
 
