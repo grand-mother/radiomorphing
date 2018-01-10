@@ -68,13 +68,14 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
     i=0.
     h=hD
     ai=0
+    step=10
     while X< Xmax_primary:
         i=i+1
-        ai=i*10. #100. #m
+        ai=i*step #100. #m
         hi= -Re+np.sqrt(Re**2. + ai**2. + hD**2. + 2.*Re*hD - 2*ai*np.cos(gamma) *(Re+hD))## cos(gamma)= + to - at 90dg
         deltah= abs(h-hi) #(h_i-1 - hi)= delta h
         h=hi # new height
-        X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * ai *100. #(deltah*100) *abs(1./np.cos(np.pi-zen2)) # Xmax in g/cm2, slanted = Xmax, vertical/ cos(theta); density in g/cm3, h: m->100cm, np.pi-zen2 since it is defined as where the showers comes from, abs(cosine) so correct for minus values
+        X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * step *100. #(deltah*100) *abs(1./np.cos(np.pi-zen2)) # Xmax in g/cm2, slanted = Xmax, vertical/ cos(theta); density in g/cm3, h: m->100cm, np.pi-zen2 since it is defined as where the showers comes from, abs(cosine) so correct for minus values
 
     return h, ai # Xmax_height in m, Xmax_distance in m
 
