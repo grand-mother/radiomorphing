@@ -230,8 +230,28 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files c
                     #NOTE: traces of shubshowers have to be added up for comparison
                     
                     
+                    ## copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
+                    #shutil.move(out_dir, data_dir) 
+                    
+                    import tarfile
+                    tar_name= join(tmp_dir, "InterpolatedSignals", str(event["tag"])+".tgz")
+                    tar = tarfile.open(tar_name, "w:gz")
+                    tar.add(out_dir, arcname=str(event["tag"]))
+                    tar.close()
+                    
+                    #import tarfile
+
+                    #with tarfile.open( out_dir + ".tgz", "w:gz" ) as tar:
+                        #for name in os.listdir( out_dir):
+                            #tar.add(name)
+                            #print "tar-file: ", name
+                    
+                    
                     # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
-                    shutil.move(out_dir, data_dir) 
+                    #shutil.move(out_dir, data_dir) 
+                    print tar_name
+                    shutil.move(tar_name, data_dir) 
+                    shutil.rmtree(out_dir)
         
 
 #try:
