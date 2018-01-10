@@ -70,15 +70,16 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
     ai=0
     while X< Xmax_primary:
         i=i+1
-        ai=i*100. #m
+        ai=i*10. #100. #m
         hi= -Re+np.sqrt(Re**2. + ai**2. + hD**2. + 2.*Re*hD - 2*ai*np.cos(gamma) *(Re+hD))## cos(gamma)= + to - at 90dg
         deltah= abs(h-hi) #(h_i-1 - hi)= delta h
         h=hi # new height
-        X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * (deltah*100) #*abs(1./np.cos(np.pi-zen2)) # Xmax in g/cm2, slanted = Xmax, vertical/ cos(theta) (wrong); density in g/cm3, h: m->100cm, np.pi-zen2 since it is defined as where the showers comes from, abs(cosine) so correct for minus values
+        X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * ai *100. #(deltah*100) *abs(1./np.cos(np.pi-zen2)) # Xmax in g/cm2, slanted = Xmax, vertical/ cos(theta); density in g/cm3, h: m->100cm, np.pi-zen2 since it is defined as where the showers comes from, abs(cosine) so correct for minus values
 
     return h, ai # Xmax_height in m, Xmax_distance in m
 
-def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo):
+def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo, altitude):
+    #print "altitude scaling ", altitude
     # 2: target shower, 1: generic shower
     #################### Energy scaling
     #% Energy
@@ -100,16 +101,16 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo):
     kAz = kAz#* np.cos(az2-az1)
 
     h_ref=injh1
-    h=injh2
+    h=altitude #injh2 # actual altitude wrt sealevel at decay position of target position 
     #%############## Height+Zenith, distance injection point to xmax rougly 8000m
     #hx_ref = h_ref+8000*np.cos(zen1) #   % Height at reference shower Xmax
     hx_ref = h_ref+8000*np.tan(0.5*np.pi-zen1) #   % Height at reference shower Xmax
     ac_ref = getCerenkovAngle(hx_ref)
     rho_ref = _getAirDensity(hx_ref)
     #hx = h+8000*np.cos(zen2)#   % Height at  shower Xmax
-    hx = h+8000*np.tan(0.5*np.pi-zen2)#   % Height at  shower Xmax
-    ac = getCerenkovAngle(hx)
-    rho = _getAirDensity(hx)
+    hx = h+8000*np.tan(0.5*np.pi-zen2)#   % Height at target shower Xmax 
+    ac = getCerenkovAngle(hx) # ATTENTION add here altitude to get correct density
+    rho = _getAirDensity(hx) # ATTENTION add here altitude to get correct density
     kStretch = float(ac)/float(ac_ref)#  % Stretch factor for the antenna grid
     kRho = np.sqrt(rho_ref/rho)
     kHeight = kRho/kStretch
@@ -122,13 +123,13 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo):
 
 
 
-def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phigeo, thetageo, l,  positions, path): # hand over parameters from reference shower 1 and target shower 2, the number of the antenna in the star shape you would like to have  and all position of complete starshape (for strechting needed), the path to the folder containing the sim, and for now the frequencies (should be removed if one included the antenna response
+def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phigeo, thetageo, l,  positions, path, altitude): # hand over parameters from reference shower 1 and target shower 2, the number of the antenna in the star shape you would like to have  and all position of complete starshape (for strechting needed), the path to the folder containing the sim, and for now the frequencies (should be removed if one included the antenna response
 
 #SCALING
-    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo)
+    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo, altitude)
     kAmp=kE*kAz*kHeight
-    if l==0:
-        print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
+#    if l==0:
+#        print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
 
     #print 'Amplitude changed by kAmp= ' + str(kAmp), ' Position changed by kStretch= '+ str(kStretch)
 
@@ -275,7 +276,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 ################################################################################
 
 def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
-               E2, zen2, az2, injh2):
+               E2, zen2, az2, injh2, altitude):
     """Scale the simulated traces of a run to the shower parameters
     """
 
@@ -288,8 +289,8 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     thetageo =(180.-27.05)*np.pi/180. # 152.95*np.pi/180. #27.05*np.pi/180.
                                       # (pointing down)-62.95
 
-    print ""
-    print "###############################  new plane gets scaled ... ", run
+#    print ""
+#    print "###############################  new plane gets scaled ... ", run
 
     path = os.path.join(sim_dir, run) # Path to the simulation run which
                                       # shall later be rescaled or so
@@ -306,12 +307,13 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
         print ", ".join(parameters)
 
     # Print the reference parameter values
-    print "# Reference shower", run
-    print_parameters(E1, dist1, zen1, az1, injh1)
+#    print "# Reference shower", run
+#    print_parameters(E1, dist1, zen1, az1, injh1)
 
     # Print the target parameter values
-    print "Target shower parameters"
-    print_parameters(E2, dist1, zen2, az2, injh2)
+#    print "Target shower parameters"
+#    print_parameters(E2, dist1, zen2, az2, injh2)
+#    print "Altitude at decay ", altitude, " m"  # to correct injh2 for it since Earth curvature taken into account
 
     # Convert the angles from degrees to radians
     zen1, az1, zen2, az2 = map(np.deg2rad, (zen1, az1, zen2, az2))
@@ -334,13 +336,13 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     end = positions.shape[0]
     #### loop over all antenna positions, outer positions should be skipped
     #### since then the interpolation doesnt work anymore
-    print os.path.join(path, "a0.trace")
+#    print os.path.join(path, "a0.trace")
     for l in np.arange(0, end):
         # always hand over all need parameters,1 3D pulse, and all antenna
         # positions
         txt3, pos_new[l,:] = _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2,
                                            zen2, injh2, primary, phigeo,
-                                           thetageo, l,  positions, path)
+                                           thetageo, l,  positions, path, altitude)
 
         # Uncomment if hilbert envelope needed one day
         #hexf2 = abs(hilbert(txt3.T[1])) # Ex
@@ -362,7 +364,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
             # Exyz are also in columns 456
             for i in range(0, len(txt3.T[0])):
                 args = (txt3.T[0,i], txt3.T[1,i], txt3.T[2,i], txt3.T[3,i])
-                print >> FILE, "%3.2f	%1.5e	%1.5e	%1.5e" % args
+                print >> FILE, "%.2f	%1.3e	%1.3e	%1.3e" % args
 
             ## in the last line of the file we wanna write the max. ampl of the
             ## hilbert envelope. Something like: amp exm eym ezm
@@ -383,7 +385,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     print end, "antennas scaled, positions saved in:", posfile_new
 
 
-def scale(sim_dir, primary, energy, zenith, azimuth, injection_height):
+def scale(sim_dir, primary, energy, zenith, azimuth, injection_height, altitude):
     """Scale all simulated traces to the shower parameters
     """
     # Loop over runs
@@ -403,4 +405,4 @@ def scale(sim_dir, primary, energy, zenith, azimuth, injection_height):
 
             # Scale this run
             _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
-                       energy, zenith, azimuth, injection_height)
+                       energy, zenith, azimuth, injection_height, altitude)
