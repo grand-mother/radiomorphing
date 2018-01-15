@@ -6,6 +6,8 @@ import numpy as np
 import shutil
 #import time
 
+import computevoltage_ForHLR as cv
+
 
 ''' call that script via: python example.py *json path_to_TMP
     It will read in the information in the jso-file, event-by-event- and convert it to the nessary format of input for the radio morphing.
@@ -19,6 +21,9 @@ sys.path.append(join(root_dir, "lib", "python"))
 
 import radiomorphing
 import retro
+
+# include computation of voltage tracesm otherwise set to False
+VOLTAGE=True
 
 
 
@@ -46,11 +51,24 @@ print "path to sim " , sim_dir
     
 particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta
 
-print "json file : ", str(sys.argv[1])
+
+json_file=str(sys.argv[1])
+#print "json file : ", json_file
+
+### move json file to tmp_dir
+# get name and path
+path_json, filename = os.path.split(json_file)
+#mv json file to TMP
+shutil.copy(json_file,tmp_dir)
+# get new path and json file 
+json_file = join(tmp_dir, filename)
+#print json_file
+
+
 #j=0
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
-for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files contains a list of events which shall run on one node"
+for event in EventIterator(json_file):#"events-flat.json"): #json files contains a list of events which shall run on one node"
    #print event["tag"] # gives you the tag one after eachother, long
    #print event["decay"] #(pid, (momentum_x,, momentum_y, momentum_z)
    #print event["decay"][0] #returns the inital neutrino
@@ -137,6 +155,8 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files c
                 np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
                 print "antenna corrected: ", event["antennas"][0]-correction
                 
+                
+                
 
                 ##### Start radio morphing
 
@@ -148,8 +168,20 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files c
                         "injection_height" : height,    # m
                         "altitude" : decay_altitude}   # m
 
-                    # Perform the radiomorphing
+                # Perform RADIO MORPHING
                 radiomorphing.process(sim_dir, shower, antennas, out_dir)
+                
+                
+                
+                
+                if VOLTAGE:
+                    #### get VOLTAGE traces out_#.txt in out_dir
+                    alpha_sim=0 # ATTENTIONhas to be handed over as an array at some point
+                    effective = 1 # use effective zenith
+                    
+                    cv.compute(out_dir, alpha_sim, effective, json_file)
+                    ### the original json file stored on TMP has to get modified, otherwise the results get overwritten
+                
                 
                 
                 import tarfile
@@ -157,13 +189,6 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files c
                 tar = tarfile.open(tar_name, "w:gz")
                 tar.add(out_dir, arcname=str(event["tag"]))
                 tar.close()
-                
-                #import tarfile
-
-                #with tarfile.open( out_dir + ".tgz", "w:gz" ) as tar:
-                    #for name in os.listdir( out_dir):
-                        #tar.add(name)
-                        #print "tar-file: ", name
                 
                 
                 # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
@@ -253,6 +278,13 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): #json files c
                     shutil.move(tar_name, data_dir) 
                     shutil.rmtree(out_dir)
         
+
+if VOLTAGE:
+    filename=os.path.splitext(filename)[0]
+    newname= join(data_dir, filename+".voltage.json")
+    shutil.copy(json_file,newname)
+    print "Move json file to:", newname 
+
 
 #try:
     #shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
