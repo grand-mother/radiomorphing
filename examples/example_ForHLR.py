@@ -15,15 +15,16 @@ import computevoltage_ForHLR as cv
     The script produces teh needed antpos.dat in the event-folder, caclulated traces after interpolation saved in the same folder
 ''' 
 
+## VOLTAGE COMPUTAION: if need set to 1
+VOLTAGE=1
+
+
 # Expand the PYTHONPATH and import the radiomorphing package #NOTE: this would be on the shared disc
 root_dir = realpath(join(split(__file__)[0], "..")) # = $PROJECT
 sys.path.append(join(root_dir, "lib", "python"))
 
 import radiomorphing
 import retro
-
-# include computation of voltage tracesm otherwise set to False
-VOLTAGE=True
 
 
 
@@ -174,7 +175,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 
                 
-                if VOLTAGE:
+                ##### VOLTAGE COMPUTATION
+                if VOLTAGE==1:
                     #### get VOLTAGE traces out_#.txt in out_dir
                     alpha_sim=0 # ATTENTIONhas to be handed over as an array at some point
                     effective = 1 # use effective zenith
@@ -279,7 +281,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     shutil.rmtree(out_dir)
         
 
-if VOLTAGE:
+if VOLTAGE==1:
     filename=os.path.splitext(filename)[0]
     newname= join(data_dir, filename+".voltage.json")
     shutil.copy(json_file,newname)
