@@ -290,7 +290,10 @@ def effective_zenith(zen, azim, alpha, x_ant, y_ant, z_ant, x_xmax=0, y_xmax=0, 
 
 #===========================================================================================================
 def compute(path, alpha_sim, effective, json_file):#, json_out):
-#===========================================================================================================	
+#===========================================================================================================
+
+    print "VOLTAGE COMPUTATION STARTED"
+
     # shower you are interested in
     showerID = str(path.split('/')[-1])
     if not showerID:
@@ -462,6 +465,7 @@ def compute(path, alpha_sim, effective, json_file):#, json_out):
             #pl.savetxt(path+'out_'+str(l)+'.txt', (timeEW, voltage_EW, voltage_NS), newline='\r\n')#, voltage_NS)) # is not working correctly
 
             f = file(path+'/out_'+str(l)+'.txt',"w")
+            #print "OUTFILE : ", path+'/out_'+str(l)+'.txt'
             for i in np.arange(len(timeEW)):
                 print >>f,"%1.5e	%1.2e	%1.2e	%1.2e" % (timeEW[i], voltage_EW[i], voltage_NS[i], voltage_vert[i] ) # same number of digits as input
             f.close()
@@ -527,12 +531,13 @@ def compute(path, alpha_sim, effective, json_file):#, json_out):
 
 
 ############### end of loop over antennas
-
-    # add the additional informations to the shower event    
-    event['voltage'] = voltage # muV
-    event['time_peaks'] = time_peaks # s, muV
-
-    log_event(**event)
+    if len(voltage)==0:
+        print "- effective zenith not fulfilled - NO VOLTAGE COMPUTED"
+    else:    
+        # add the additional informations to the shower event    
+        event['voltage'] = voltage # muV
+        event['time_peaks'] = time_peaks # s, muV
+        log_event(**event)
     
     
     
@@ -562,6 +567,8 @@ if __name__ == '__main__':
 
     # which efield trace do you wanna read in. to be consistent the script works with the antenna ID
     path=sys.argv[1] #folder containing the traces and where the output should go to
+    print "\n"
+    print path
 
     # include a mountain slope - correction of zenith angle
     alpha_sim=float(sys.argv[2])
@@ -572,10 +579,11 @@ if __name__ == '__main__':
 
     # Read the json file to extract the primary type, the energy and the injection height
     json_file = str(sys.argv[4])
+    print json_file
     
     ## path where json file with additional info is saved
     #json_out = str(sys.argv[5])
 
-
+    print "VOLTAGE COMPUTED"
     ## CALL THE S***
     compute(path, alpha_sim, effective, json_file)#, json_out)
