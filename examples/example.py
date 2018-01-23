@@ -54,6 +54,9 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
    decay_pos=decay_pos+np.array([0.,0.,EARTH_RADIUS]) # corrected for earth radius
    print "decay position after correction: ", decay_pos
    
+   decay_altitude=event["tau_at_decay"][3] 
+   print "decay decay_altitude: ", decay_altitude
+   
    v=event["tau_at_decay"][2]# shower direction
    
    ###ANGLES
@@ -115,7 +118,8 @@ for event in EventIterator(str(sys.argv[1])):#"events-flat.json"): json files co
         "energy" : ep,               # EeV
         "zenith" : theta,               # deg (GRAND frame)
         "azimuth" : azimuth,                # deg (GRAND frame)
-        "injection_height" : height }   # m
+        "injection_height" : height,
+        "altitude" : decay_altitude}   # m
 
     # Perform the radiomorphing
    radiomorphing.process(sim_dir, shower, antennas, out_dir)
