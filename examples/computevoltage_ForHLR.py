@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from os.path import  join
+from os.path import split, join, realpath
 
 
 import sys
@@ -9,6 +9,11 @@ import numpy as np
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
 from scipy.interpolate import interp1d
+
+# Expand the PYTHONPATH and import the radiomorphing package #NOTE: this would be on the shared disc
+root_dir = realpath(join(split(__file__)[0], "..")) # = $PROJECT
+sys.path.append(join(root_dir, "lib", "python"))
+
 import retro
 from retro.event import EventIterator, EventLogger
 import modules 
