@@ -353,12 +353,15 @@ def compute(path, alpha_sim, effective, json_file):#, json_out):
         primary="pion"
         
         
-   ### json file containing additional data for analysis     
-    #filename = str(showerID) + ".voltage.json"
+   ## json file containing additional data for analysis     
+    filename = str(showerID) + ".voltage.json"
+    path2, folder2 = os.path.split(path) # path2 should be one folder level up than traces
     #path2 = join(path_json, filename)
-    #log_event = EventLogger(path=path2)
+    path2 = join(path2, filename)
+    log_event = EventLogger(path=path2)
 
-    log_event = EventLogger(path=json_file)
+    #log_event = EventLogger(path=json_file) ## would write into the original json file
+    
     voltage=[] #np.zeros(100)
     time_peaks=[]
         
