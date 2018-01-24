@@ -62,7 +62,7 @@ path_json, filename = os.path.split(json_file)
 #mv json file to TMP
 shutil.copy(json_file,tmp_dir)
 # get new path and json file 
-json_file = join(tmp_dir, filename)
+json_file = join(tmp_dir, filename) # original json file containing a bunch of events
 #print json_file
 
 
@@ -85,7 +85,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
    #if j<43: 
         print "\n"
         print "Event ", str(event["tag"]), " started"
-                            
+        
+                       
                             
         ###DECAY
         decay_pos=event["tau_at_decay"][1]
@@ -114,6 +115,11 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
             azimuth = 360.-azimuth
         print "azimuth: ", azimuth
         
+        
+        #### Neutrino energy
+        print "nu momentum: ", event["decay"][0][1]
+        nu_energy=np.sqrt((event["decay"][0][1][0])**2 + (event["decay"][0][1][1])**2 + (event["decay"][0][1][2])**2)* 1e-9 # GeV in EeV
+               
 
         ####### STUDY IMPACT OF SEVERAL DECAY PRODUCTS 
         subshowers=0. # subshowers introduced for each decayproduct, subshower=0. leading particle gets all the energy
@@ -121,7 +127,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
         if subshowers==0:
                 ### ENERGY
                 ep_array=np.zeros(len(event["decay"])-1)
-                for i in range(1, len(event["decay"])): #len(event["decay"])-1 # gives you the number of decay products in event
+                for i in range(1, len(event["decay"])): #len(event["decay"])-1 # gives you the number of decay products in event, i==0: neutrino
                     if float(event["decay"][i][0]) in particle_list: # just for valid particles 
                         pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
                         ep_array[i-1]=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
@@ -155,9 +161,9 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 print "antenna: ", event["antennas"][0]
                 np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
                 print "antenna corrected: ", event["antennas"][0]-correction
-                
-                
-                
+
+
+
 
                 ##### Start radio morphing
 
@@ -173,7 +179,17 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 radiomorphing.process(sim_dir, shower, antennas, out_dir)
                 
                 
+                #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
                 
+                #set up the you folder structure within data_dir like: latitude-longitude/energy/theta/phi
+                # ATTENTION: not clear if nu_energy from momentum correct
+                structure=join("X"+str(int(decay_pos[0]))+"_Y"+str(int(decay_pos[1])), "{:1.0e}".format(int(nu_energy*1e18)), "T"+str(int(theta)), "P"+str(int(azimuth)) )
+                print structure
+                structure=join(data_dir, structure)
+                if not os.path.exists(structure): # later this is nit necessary with $TMP
+                    os.makedirs(structure)
+                        
+
                 
                 ##### VOLTAGE COMPUTATION
                 if VOLTAGE==1:
@@ -182,7 +198,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     effective = 1 # use effective zenith
                     
                     cv.compute(out_dir, alpha_sim, effective, json_file)
-                    ### the original json file stored on TMP has to get modified, otherwise the results get overwritten
+                    ### cv produces a new jsonfile named eventtag.voltage.json in tmp_dir for every event in json_file
+                    
+                    cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
+                    
+                    #newname= join(data_dir, str(event["tag"])+".voltage.json")
+                    #shutil.copy(cvjson_file,newname)
+                    shutil.move(cvjson_file, structure)
+                    print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
                 
                 
                 
@@ -196,96 +219,97 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
                 #shutil.move(out_dir, data_dir) 
                 print tar_name
-                shutil.move(tar_name, data_dir) 
+                shutil.move(tar_name, structure) 
                 shutil.rmtree(out_dir)
 
 
-        if subshowers==1:
-            #### here if necessary loop over the single decay products. Create a folder for ecah of them with the event-tag_i for a later summing up of the traces.
-            #### check whether running subshower or leading product with total energy (like done in ToyModel) necessary
-            #### Then, move it after antenna and take RM into the loop
+#### NOTE Running subshowers commented out the the moment since timing not yet included. Has to be updated if evertyhing is included
+        #if subshowers==1:
+            ##### here if necessary loop over the single decay products. Create a folder for ecah of them with the event-tag_i for a later summing up of the traces.
+            ##### check whether running subshower or leading product with total energy (like done in ToyModel) necessary
+            ##### Then, move it after antenna and take RM into the loop
             
-            for i in range(1, len(event["decay"])): #len(event["decay"])-1 # gives you the number of decay products in event
-                if float(event["decay"][i][0]) in particle_list: # just for valid particles
-                    pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
-                    ep=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
-                    ep*=1.e-9 #in EeV
-                    print "energy in EeV: ", ep
+            #for i in range(1, len(event["decay"])): #len(event["decay"])-1 # gives you the number of decay products in event
+                #if float(event["decay"][i][0]) in particle_list: # just for valid particles
+                    #pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
+                    #ep=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
+                    #ep*=1.e-9 #in EeV
+                    #print "energy in EeV: ", ep
                     
-                    ### PID primary
-                    #part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
-                    PID= float(event["decay"][i][0])
-                    el_list=[22.0,11.0,-11.0, 111.0] #'22.0':'gamma', '11.0': 'electron', '-11.0' positron: '111.0': 'pi0'
-                    if PID in el_list:
-                        primary="electron"
-                    else: # pion-like
-                        primary="pion"
-                    print primary
+                    #### PID primary
+                    ##part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
+                    #PID= float(event["decay"][i][0])
+                    #el_list=[22.0,11.0,-11.0, 111.0] #'22.0':'gamma', '11.0': 'electron', '-11.0' positron: '111.0': 'pi0'
+                    #if PID in el_list:
+                        #primary="electron"
+                    #else: # pion-like
+                        #primary="pion"
+                    #print primary
                     
                     
-                    ## create a folder in $TMP for each event
-                    out_dir = join(tmp_dir, "InterpolatedSignals", str(event["tag"])) # will be created in $TMP, will be deleted after each event
-                    out_dir=out_dir+"_"+str(i) # folder for each decay particle
-                    if not os.path.exists(out_dir):
-                        os.makedirs(out_dir)
-                    print "folder ", out_dir 
+                    ### create a folder in $TMP for each event
+                    #out_dir = join(tmp_dir, "InterpolatedSignals", str(event["tag"])) # will be created in $TMP, will be deleted after each event
+                    #out_dir=out_dir+"_"+str(i) # folder for each decay particle
+                    #if not os.path.exists(out_dir):
+                        #os.makedirs(out_dir)
+                    #print "folder ", out_dir 
                     
                 
-                ##save ANTENNA POSITIONS in anpos.dat for each event
-                ## antenna positions have to be corrected for the deacy positions since decay in morphing at (0,0,height) 
-                    antennas = join(out_dir, "antpos.dat") # file of list of desired antennas position -> in out_dir at $TMP
-                    correction= np.array([decay_pos[0], decay_pos[1], 0.])
-                    print "correction: ",correction
-                    print "antenna: ", event["antennas"][0]
-                    np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates, later being read in in core.py
-                    print "antenna corrected: ", event["antennas"][0]-correction
+                ###save ANTENNA POSITIONS in anpos.dat for each event
+                ### antenna positions have to be corrected for the deacy positions since decay in morphing at (0,0,height) 
+                    #antennas = join(out_dir, "antpos.dat") # file of list of desired antennas position -> in out_dir at $TMP
+                    #correction= np.array([decay_pos[0], decay_pos[1], 0.])
+                    #print "correction: ",correction
+                    #print "antenna: ", event["antennas"][0]
+                    #np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates, later being read in in core.py
+                    #print "antenna corrected: ", event["antennas"][0]-correction
                     
 
-                    ##### Start radio morphing
+                    ###### Start radio morphing
 
-                    shower = {
-                            "primary" : primary,       # reference shower "electron" at the moment
-                            "energy" : ep,               # EeV
-                            "zenith" : theta,               # deg (GRAND frame)
-                            "azimuth" : azimuth,                # deg (GRAND frame)
-                            "injection_height" : height ,    # m
-                            "altitude" : decay_altitude}   # m
+                    #shower = {
+                            #"primary" : primary,       # reference shower "electron" at the moment
+                            #"energy" : ep,               # EeV
+                            #"zenith" : theta,               # deg (GRAND frame)
+                            #"azimuth" : azimuth,                # deg (GRAND frame)
+                            #"injection_height" : height ,    # m
+                            #"altitude" : decay_altitude}   # m
 
-                        # Perform the radiomorphing
-                    radiomorphing.process(sim_dir, shower, antennas, out_dir)
+                        ## Perform the radiomorphing
+                    #radiomorphing.process(sim_dir, shower, antennas, out_dir)
                     
-                    #NOTE: traces of shubshowers have to be added up for comparison
+                    ##NOTE: traces of shubshowers have to be added up for comparison
+                    
+                    
+                    ### copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
+                    ##shutil.move(out_dir, data_dir) 
+                    
+                    #import tarfile
+                    #tar_name= join(tmp_dir, "InterpolatedSignals", str(event["tag"])+".tgz")
+                    #tar = tarfile.open(tar_name, "w:gz")
+                    #tar.add(out_dir, arcname=str(event["tag"]))
+                    #tar.close()
+                    
+                    ##import tarfile
+
+                    ##with tarfile.open( out_dir + ".tgz", "w:gz" ) as tar:
+                        ##for name in os.listdir( out_dir):
+                            ##tar.add(name)
+                            ##print "tar-file: ", name
                     
                     
                     ## copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
-                    #shutil.move(out_dir, data_dir) 
-                    
-                    import tarfile
-                    tar_name= join(tmp_dir, "InterpolatedSignals", str(event["tag"])+".tgz")
-                    tar = tarfile.open(tar_name, "w:gz")
-                    tar.add(out_dir, arcname=str(event["tag"]))
-                    tar.close()
-                    
-                    #import tarfile
-
-                    #with tarfile.open( out_dir + ".tgz", "w:gz" ) as tar:
-                        #for name in os.listdir( out_dir):
-                            #tar.add(name)
-                            #print "tar-file: ", name
-                    
-                    
-                    # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
-                    #shutil.move(out_dir, data_dir) 
-                    print tar_name
-                    shutil.move(tar_name, data_dir) 
-                    shutil.rmtree(out_dir)
+                    ##shutil.move(out_dir, data_dir) 
+                    #print tar_name
+                    #shutil.move(tar_name, data_dir) 
+                    #shutil.rmtree(out_dir)
         
 
-if VOLTAGE==1:
-    filename=os.path.splitext(filename)[0]
-    newname= join(data_dir, filename+".voltage.json")
-    shutil.copy(json_file,newname)
-    print "Move json file to:", newname 
+#if VOLTAGE==1:
+    #filename=os.path.splitext(filename)[0]
+    #newname= join(data_dir, filename+".voltage.json")
+    #shutil.copy(json_file,newname)
+    #print "Move json file to:", newname 
 
 
 #try:
