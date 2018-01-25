@@ -116,9 +116,9 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
         print "azimuth: ", azimuth
         
         
-        #### Neutrino energy
-        print "nu momentum: ", event["decay"][0][1]
-        nu_energy=np.sqrt((event["decay"][0][1][0])**2 + (event["decay"][0][1][1])**2 + (event["decay"][0][1][2])**2)* 1e-9 # GeV in EeV
+        #### Neutrino energy - of the regenerated neutrino, not the primary one
+        #print "nu momentum: ", event["decay"][0][1]
+        #nu_energy=np.sqrt((event["decay"][0][1][0])**2 + (event["decay"][0][1][1])**2 + (event["decay"][0][1][2])**2)* 1e-9 # GeV in EeV
                
 
         ####### STUDY IMPACT OF SEVERAL DECAY PRODUCTS 
@@ -181,12 +181,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
                 
-                #set up the you folder structure within data_dir like: latitude-longitude/energy/theta/phi
+                #set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # ATTENTION: not clear if nu_energy from momentum correct
-                structure=join("X"+str(int(decay_pos[0]))+"_Y"+str(int(decay_pos[1])), "{:1.0e}".format(int(nu_energy*1e18)), "T"+str(int(theta)), "P"+str(int(azimuth)) )
+                structure=join("X"+str(int(decay_pos[0]))+"_Y"+str(int(decay_pos[1])), "E{:1.0e}".format(int(ep*1e18)), "T"+str(int(theta)), "P"+str(int(azimuth)) ) #"{:1.0e}".format(int(nu_energy*1e18))
                 print structure
                 structure=join(data_dir, structure)
-                if not os.path.exists(structure): # later this is nit necessary with $TMP
+                if not os.path.exists(structure): # later this is not necessary with $TMP
                     os.makedirs(structure)
                         
 
