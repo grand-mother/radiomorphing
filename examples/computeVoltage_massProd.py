@@ -481,9 +481,16 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
         showerID = str(path.split('/')[-1])
         if not showerID:
             showerID = str(path.split('/')[-2])
-        # Find that shower in the json file
+        ## Find that shower in the json file
         event = [evt for evt in EventIterator(json_file) if evt["tag"]==showerID][0]
-        log_event = EventLogger(path=json_file)
+        #log_event = EventLogger(path=json_file)
+        
+        ## json file containing additional data for analysis     
+        filename = str(showerID) + ".voltage.json"
+        path2, folder2 = os.path.split(path) # path2 should be one folder level up than traces (=path)
+        #path2 = join(path_json, filename)
+        path2 = join(path2, filename)
+        log_event = EventLogger(path=path2)
 
     voltage=[]
     time_peaks=[]
@@ -507,10 +514,10 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
             end=start+1
         #    print "single antenna with ID: ", str(start)," handed over"
         if  len(sys.argv)<6: # grep all antennas from the antenna file
-            positions=np.array(event["antennas"],dtype=float)
-            decay_pos=event["tau_at_decay"][1]
-            positions = positions - [decay_pos[0],decay_pos[1],0.]
-            #positions=np.genfromtxt(path+'/antpos.dat')
+            #positions=np.array(event["antennas"],dtype=float)
+            #decay_pos=event["tau_at_decay"][1]
+            #positions = positions - [decay_pos[0],decay_pos[1],0.]
+            positions=np.genfromtxt(path+'/antpos.dat')
             start=0
             end=len(positions)
             #print "Array with ", end, " antennas handed over"
@@ -651,11 +658,11 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
 ##################################################################
         if opt_input=='json':
             #### additional output needed for later study, added in the json file
-            # p2p voltage:  antenna ID, p2p EW, NS, UP, EW+NS
+            # p2p voltage:  antenna ID, p2p NS, EW, UP, EW+NS
             voltage_com=np.copy(voltage_EW)
             for i in range (0, len(voltage_EW)):
                                 voltage_com[i]+=voltage_NS[i]
-            v_list =( str(l),  max(voltage_EW) - min(voltage_EW), max(voltage_NS) - min(voltage_NS), max(voltage_vert) - min(voltage_vert), max(voltage_com) - min(voltage_com)   )
+            v_list =( str(l),  max(voltage_NS) - min(voltage_NS), max(voltage_EW) - min(voltage_EW), max(voltage_vert) - min(voltage_vert), max(voltage_com) - min(voltage_com)   )
             voltage.append( v_list )
 
             # time of peaks and value: t_EW_max, v_EW_max, t_EW_min, v_EW_min,.... EW, NS, vert, EW+NS
@@ -672,10 +679,10 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
             com_ind_max, value = max(enumerate(voltage_com), key=operator.itemgetter(1))
             com_ind_min, value = min(enumerate(voltage_com), key=operator.itemgetter(1))
 
-            time_peaks.append( (round(timeEW[EW_ind_max],11),  voltage_EW[EW_ind_max], round(timeEW[EW_ind_min],11), voltage_EW[EW_ind_min],
-                                round(timeNS[NS_ind_max],11), voltage_NS[NS_ind_max], round(timeNS[NS_ind_min],11), voltage_NS[NS_ind_min],
+            time_peaks.append( (round(timeNS[NS_ind_max],11),  voltage_NS[NS_ind_max], round(timeNS[NS_ind_min],11), voltage_NS[NS_ind_min],
+                                round(timeEW[EW_ind_max],11), voltage_EW[EW_ind_max], round(timeEW[EW_ind_min],11), voltage_EW[EW_ind_min],
                                 round(timevert[vert_ind_max],11), voltage_vert[vert_ind_max], round(timevert[vert_ind_min],11), voltage_vert[vert_ind_min],
-                                round(timeEW[com_ind_max],11), voltage_com[com_ind_max], round(timeEW[com_ind_min],11), voltage_com[com_ind_min] )  )
+                                round(timeNS[com_ind_max],11), voltage_com[com_ind_max], round(timeNS[com_ind_min],11), voltage_com[com_ind_min] )  )
 
 ############### end of loop over antennas
     if opt_input=='json':
