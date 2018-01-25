@@ -5,8 +5,10 @@ import sys
 import numpy as np
 import shutil
 #import time
+import subprocess
 
-import computevoltage_ForHLR as cv
+#import computevoltage_ForHLR as cv
+import computeVoltage_massProd as cv
 
 
 ''' call that script via: python example.py *json path_to_TMP
@@ -194,13 +196,15 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 ##### VOLTAGE COMPUTATION
                 if VOLTAGE==1:
                     #### get VOLTAGE traces out_#.txt in out_dir
-                    alpha_sim=0 # ATTENTIONhas to be handed over as an array at some point
+                    #alpha_sim=0 # ATTENTIONhas to be handed over as an array at some point
                     effective = 1 # use effective zenith
                     
-                    cv.compute(out_dir, alpha_sim, effective, json_file)
-                    ### cv produces a new jsonfile named eventtag.voltage.json in tmp_dir for every event in json_file
+                    #cv.compute(out_dir, alpha_sim, effective, json_file)
+                    #### cv produces a new jsonfile named eventtag.voltage.json in tmp_dir for every event in json_file
+                    cv.compute('json',out_dir, effective,theta, azimuth, ep, height, primary,json_file)
                     
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
+                    
                     
                     #newname= join(data_dir, str(event["tag"])+".voltage.json")
                     #shutil.copy(cvjson_file,newname)
@@ -221,6 +225,53 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 print tar_name
                 shutil.move(tar_name, structure) 
                 shutil.rmtree(out_dir)
+                
+                
+                
+                
+                ### Upload to iRODS: write a shell script and start it
+                #import subprocess
+                #subprocess.call(['./test.sh'])
+
+                tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                jfile=structure+"/"+str(event["tag"])+".voltage.json"
+
+                sh_file= tmp_dir + "upload.ish"
+                print sh_file
+                inpfile = open(sh_file,"w+")
+                
+                inpfile.write("#!/project/fh1-project-huepra/le6232/soft/ishell/bin/ishell")
+                inpfile.write("# Example script for copying data from fh1 to iRODS. Note")
+                inpfile.write("# that you need to set your iRODS environment first.")
+                inpfile.write("#")
+                inpfile.write("# -----------------------------------------")
+                inpfile.write("# Scheduler options")
+                inpfile.write("# -----------------------------------------")
+                inpfile.write("#MSUB -N put-events")
+                inpfile.write("#MSUB -q singlenode")
+                inpfile.write("#MSUB -l nodes=1:ppn=1")
+                inpfile.write("#MSUB -l walltime=24:00:00")
+                inpfile.write("#MSUB -l pmem=3gb")
+                inpfile.write("#MSUB -v PATH, PYTHONPATH")
+                inpfile.write("# -----------------------------------------")
+                inpfile.write("put -f {:s}\n".format(tgzfile))
+                inpfile.write("put -f {:s}\n".format(jfile))
+                inpfile.write("#")
+                
+                inpfile.close()
+                
+                subprocess.call([sh_file])
+                
+                os.remove(sh_file)
+                
+                
+                
+                
+                
+print "Job done"
+
+
+
 
 
 #### NOTE Running subshowers commented out the the moment since timing not yet included. Has to be updated if evertyhing is included
@@ -316,5 +367,5 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
     #shutil.rmtree(tmp_dir) # remove tmp dir, but not necessary on ForHLR, done automatically when jobs finished
     #print "TMP deleted"
 #except IOError:
-print "Job done"
+    #print "Job done"
 
