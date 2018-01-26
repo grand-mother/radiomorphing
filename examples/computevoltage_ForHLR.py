@@ -18,6 +18,8 @@ import retro
 from retro.event import EventIterator, EventLogger
 import modules 
 
+
+# NOTE: set wkdir path correctly
 wkdir = './'
 EARTH_RADIUS=6370949. #m
 azstep=1 #step in azimuth in npy file

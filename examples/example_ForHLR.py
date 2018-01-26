@@ -266,8 +266,6 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 
                 
-                
-                
 print "Job done"
 
 
