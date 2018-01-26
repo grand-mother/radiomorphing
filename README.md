@@ -6,6 +6,9 @@ W. Carvalho, K. de Vries, O. Martineau, C. Medina, V. Niess, M. Tueros, A. Zille
 
 Details of the methods can be found in <RM_PUBLICATION>
 
+===== This version is the very first draft and more like a list of notes ====
+===== beta testers should already find all needed informations to run RM ====
+
 
 ## Description/Introduction
 
