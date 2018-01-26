@@ -18,7 +18,7 @@ root_dir = realpath(join(split(__file__)[0], "..")) # = $PROJECT
 sys.path.append(join(root_dir, "lib", "python"))
 import retro
 from retro.event import EventIterator, EventLogger
-import modules
+#import modules
 
 EARTH_RADIUS=6370949. #m
 azstep=5 #step in azimuth in npy file
