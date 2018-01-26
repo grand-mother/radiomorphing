@@ -91,17 +91,20 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                        
                             
         ###DECAY
-        decay_pos=event["tau_at_decay"][1]
+        decay_pos=event["tau_at_decay"][2]
         height=decay_pos[2]
         print "decay position: ", decay_pos
         decay_pos=decay_pos+np.array([0.,0.,EARTH_RADIUS]) # corrected for earth radius
         print "decay position after correction: ", decay_pos
         
         
-        decay_altitude=event["tau_at_decay"][3] 
+        #decay_altitude=event["tau_at_decay"][3] 
+        decay_altitude=event["tau_at_decay"][4][2]
         print "decay decay_altitude: ", decay_altitude
         
-        v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed  
+        #v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed  
+        v=event["tau_at_decay"][3]# shower direction, assuming decay products strongly forward beamed  
+
 
         
         ###ANGLES
@@ -160,9 +163,13 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 antennas = join(out_dir, "antpos.dat") # file of list of desired antennas position -> in out_dir at $TMP
                 correction= np.array([decay_pos[0], decay_pos[1], 0.])
                 print "correction: ",correction
-                print "antenna: ", event["antennas"][0]
-                np.savetxt(antennas, event["antennas"]-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
-                print "antenna corrected: ", event["antennas"][0]-correction
+                print "antenna: ", event["antennas"][0][0:3]
+                ant=np.copy(event["antennas"])
+                ant= np.delete(ant, np.s_[3:5], axis=1)
+                #ant= np.array(event["antennas"][0][0:3])
+                #print "all antennas ", ant
+                np.savetxt(antennas, ant-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
+                print "antenna corrected: ", event["antennas"][0][0:3]-correction
 
 
 
@@ -185,7 +192,13 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 #set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # ATTENTION: not clear if nu_energy from momentum correct
-                structure=join("X"+str(int(decay_pos[0]))+"_Y"+str(int(decay_pos[1])), "E{:1.0e}".format(int(ep*1e18)), "T"+str(int(theta)), "P"+str(int(azimuth)) ) #"{:1.0e}".format(int(nu_energy*1e18))
+                latitude=event["tau_at_decay"][4][0]
+                longitude=event["tau_at_decay"][4][1]
+                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                
+                
+                # following the naming of the tag
+                structure=join("La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) #"{:1.0e}".format(int(nu_energy*1e18))
                 print structure
                 structure=join(data_dir, structure)
                 if not os.path.exists(structure): # later this is not necessary with $TMP
@@ -229,40 +242,40 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 
                 
-                ### Upload to iRODS: write a shell script and start it
-                #import subprocess
-                #subprocess.call(['./test.sh'])
+                #### Upload to iRODS: write a shell script and start it
+                ##import subprocess
+                ##subprocess.call(['./test.sh'])
 
-                tgzfile=structure+"/"+str(event["tag"])+".tgz"
-                jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                #tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                #jfile=structure+"/"+str(event["tag"])+".voltage.json"
 
-                sh_file= tmp_dir + "upload.ish"
-                print sh_file
-                inpfile = open(sh_file,"w+")
+                #sh_file= tmp_dir + "upload.ish"
+                #print sh_file
+                #inpfile = open(sh_file,"w+")
                 
-                inpfile.write("#!/project/fh1-project-huepra/le6232/soft/ishell/bin/ishell")
-                inpfile.write("# Example script for copying data from fh1 to iRODS. Note")
-                inpfile.write("# that you need to set your iRODS environment first.")
-                inpfile.write("#")
-                inpfile.write("# -----------------------------------------")
-                inpfile.write("# Scheduler options")
-                inpfile.write("# -----------------------------------------")
-                inpfile.write("#MSUB -N put-events")
-                inpfile.write("#MSUB -q singlenode")
-                inpfile.write("#MSUB -l nodes=1:ppn=1")
-                inpfile.write("#MSUB -l walltime=24:00:00")
-                inpfile.write("#MSUB -l pmem=3gb")
-                inpfile.write("#MSUB -v PATH, PYTHONPATH")
-                inpfile.write("# -----------------------------------------")
-                inpfile.write("put -f {:s}\n".format(tgzfile))
-                inpfile.write("put -f {:s}\n".format(jfile))
-                inpfile.write("#")
+                #inpfile.write("#!/project/fh1-project-huepra/le6232/soft/ishell/bin/ishell")
+                #inpfile.write("# Example script for copying data from fh1 to iRODS. Note")
+                #inpfile.write("# that you need to set your iRODS environment first.")
+                #inpfile.write("#")
+                #inpfile.write("# -----------------------------------------")
+                #inpfile.write("# Scheduler options")
+                #inpfile.write("# -----------------------------------------")
+                #inpfile.write("#MSUB -N put-events")
+                #inpfile.write("#MSUB -q singlenode")
+                #inpfile.write("#MSUB -l nodes=1:ppn=1")
+                #inpfile.write("#MSUB -l walltime=24:00:00")
+                #inpfile.write("#MSUB -l pmem=3gb")
+                #inpfile.write("#MSUB -v PATH, PYTHONPATH")
+                #inpfile.write("# -----------------------------------------")
+                #inpfile.write("put -f {:s}\n".format(tgzfile))
+                #inpfile.write("put -f {:s}\n".format(jfile))
+                #inpfile.write("#")
                 
-                inpfile.close()
+                #inpfile.close()
                 
-                subprocess.call([sh_file])
+                #subprocess.call([sh_file])
                 
-                os.remove(sh_file)
+                #os.remove(sh_file)
                 
                 
                 
