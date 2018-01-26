@@ -18,7 +18,7 @@
 import os
 
 ### path to where one finds the json files which shall be used
-path_json= '/project/fh1-project-huepra/le6232/data/retro/flat-100x100/fb4e031/'
+path_json= '/project/fh1-project-huepra/le6232/data/retro/hotspot-150x67/seeds/'
 
 # path to the scripts for radiomorphing
 path_script='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
@@ -37,7 +37,7 @@ nfile.write('#!/bin/bash\n')
 # producing bash files to run on multiple cores
 for i in range(0, len(json_file )):
 
-        fname='flat100x100_job'+str(i)+'.sh' # filename of each job
+        fname='hotspot-150x67_job'+str(i)+'.sh' # filename of each job
         
         command='msub '+str(fname)+'\n'
         nfile.write(command)
@@ -51,7 +51,7 @@ for i in range(0, len(json_file )):
         file.write('#---------------------\n')
         file.write('#MSUB -q singlenode\n')
         file.write('#MSUB -l nodes=1:ppn=1\n')
-        file.write('#MSUB -l walltime=03:00:00\n')
+        file.write('#MSUB -l walltime=72:00:00\n')
         file.write('#MSUB -l pmem=1gb\n')
         file.write('#MSUB -m bea\n')
         file.write('#MSUB -M zilles@iap.fr\n')
