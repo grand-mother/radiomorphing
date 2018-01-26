@@ -137,6 +137,11 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
     #else:
         #azim=np.arccos(ushp[0]/np.linalg.norm(ushp[0:2]))*180/np.pi
     azim = np.degrees(np.arctan2(ushp[1],ushp[0])) # from VN email 26.01.2018
+    if azim <0:
+        azim= 360. + azim
+    #print "theta and phi in antenna", round(zen), round(azim)
+    
+    
     #print ush, alpha, beta
     if typ=='X':
         #print "Zenith & azimuth in antenna framework:",zen, azim
