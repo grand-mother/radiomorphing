@@ -377,16 +377,16 @@ def inputfromjson(path,json_file):
     event = [evt for evt in EventIterator(json_file) if evt["tag"]==showerID][0]
 
     ### DECAY
-    decay_pos=event["tau_at_decay"][1]
+    decay_pos=event["tau_at_decay"][2]
     #print "decay position: ", decay_pos
     injection_height=decay_pos[2]
     decay_pos=decay_pos+np.array([0.,0.,EARTH_RADIUS]) # corrected for earth radius
     #print "decay position after correction: ", decay_pos
-    decay_altitude=event["tau_at_decay"][3]
+    decay_altitude=event["tau_at_decay"][4][2]
     #print "decay decay_altitude: ", decay_altitude
 
     ### ANGLES
-    v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed
+    v=event["tau_at_decay"][3]# shower direction, assuming decay products strongly forward beamed
     zenith_sim = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
     #print "theta: ", zenith_sim
     #orthogonal projection of v onto flat plane to get the azimuth
@@ -602,8 +602,14 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
                     if opt_input=='json':
                         x_sim,y_sim,z_sim = positions[l] #,alpha_sim,beta_sim
                         #### ATTENTION: slope to be read in from json file
-                        alpha_sim = 0.
-                        beta_sim = 0.
+                        alpha_sim = event["antennas"][l][3]
+                        beta_sim = event["antennas"][l][4]
+                        #print "slopes ", alpha_sim, beta_sim 
+                        if beta_sim<0:
+                            beta_sim=360.+beta_sim
+                        #print "   ", beta_sim
+                        #alpha_sim=10
+                        #beta_sim=0
                     else:
                         #print 'Trying to read antenna position from antpos.dat file...'
                         numberline = int(l) + 1
