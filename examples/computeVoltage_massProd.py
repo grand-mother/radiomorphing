@@ -3,7 +3,7 @@ import os
 from os.path import  split, join, realpath
 import sys
 import numpy as np
-import pylab as pl
+#import pylab as pl
 
 #sys.path.append('/Users/nrenault/Desktop/GRAND/retro-master/lib/python/')
 #wkdir = '/Users/nrenault/Desktop/GRAND/scripts_clean/'
@@ -166,10 +166,10 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
     amplitudet = -czen*(caz*Exp+saz*Eyp)-szen*Ezp  #To be checked!... Inverted polarity?
     amplitudep = saz*Exp-caz*Eyp
 
-    pl.figure(12)
-    pl.plot(amplituder)
-    pl.plot(amplitudet)
-    pl.plot(amplitudep)
+    #pl.figure(12)
+    #pl.plot(amplituder)
+    #pl.plot(amplitudet)
+    #pl.plot(amplitudep)
 
     ##################################
     ### all the settings for the 3 different antenna arms:
@@ -655,26 +655,26 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
 
         ###plots
         DISPLAY=0
-        if DISPLAY==1:
-            import pylab as pl
-            import matplotlib.pyplot as plt
-            plt.figure(1,  facecolor='w', edgecolor='k')
-            plt.subplot(211)
-            plt.plot(time1_sim*1e9,Ey_sim, label="Ey = EW")
-            plt.plot(time1_sim*1e9,Ex_sim, label="Ex = NS")
-            plt.plot(time1_sim*1e9,Ez_sim, label="Ez = UP")
-            plt.xlabel('Time (nsec)')
-            plt.ylabel('Electric field (muV/m)')
-            plt.legend(loc='best')
-            plt.subplot(212)
-            plt.plot(timeEW*1e9,voltage_EW, label="EW")
-            plt.plot(timeEW*1e9,voltage_NS, label="NS")
-            plt.plot(timeEW*1e9,voltage_vert, label="Vertical")
-            plt.xlabel('Time (nsec)')
-            plt.ylabel('Voltage (muV)')
-            plt.legend(loc='best')
+        #if DISPLAY==1:
+            #import pylab as pl
+            #import matplotlib.pyplot as plt
+            #plt.figure(1,  facecolor='w', edgecolor='k')
+            #plt.subplot(211)
+            #plt.plot(time1_sim*1e9,Ey_sim, label="Ey = EW")
+            #plt.plot(time1_sim*1e9,Ex_sim, label="Ex = NS")
+            #plt.plot(time1_sim*1e9,Ez_sim, label="Ez = UP")
+            #plt.xlabel('Time (nsec)')
+            #plt.ylabel('Electric field (muV/m)')
+            #plt.legend(loc='best')
+            #plt.subplot(212)
+            #plt.plot(timeEW*1e9,voltage_EW, label="EW")
+            #plt.plot(timeEW*1e9,voltage_NS, label="NS")
+            #plt.plot(timeEW*1e9,voltage_vert, label="Vertical")
+            #plt.xlabel('Time (nsec)')
+            #plt.ylabel('Voltage (muV)')
+            #plt.legend(loc='best')
 
-            plt.show()
+            #plt.show()
 
 ##################################################################
 ##################################################################
