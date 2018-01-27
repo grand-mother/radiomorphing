@@ -266,7 +266,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
                 #p=subprocess.Popen(['./upload_test.sh','%s' %(tgzfile), '%s' %(jfile)])     
-                p=subprocess.Popen(['./upload.ish','%s' %(tgzfile), '%s' %(jfile)])  
+                p=subprocess.Popen(['/project/fh1-project-huepra/qc8087/radiomorphing/examples/upload.ish','%s' %(tgzfile), '%s' %(jfile)])  
                 
                 
 
