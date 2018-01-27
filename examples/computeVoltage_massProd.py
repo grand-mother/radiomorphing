@@ -5,8 +5,7 @@ import sys
 import numpy as np
 #import pylab as pl
 
-#sys.path.append('/Users/nrenault/Desktop/GRAND/retro-master/lib/python/')
-#wkdir = '/Users/nrenault/Desktop/GRAND/scripts_clean/'
+#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
 wkdir = './'
 
 import linecache
@@ -18,7 +17,7 @@ root_dir = realpath(join(split(__file__)[0], "..")) # = $PROJECT
 sys.path.append(join(root_dir, "lib", "python"))
 import retro
 from retro.event import EventIterator, EventLogger
-#import modules
+import modules
 
 EARTH_RADIUS=6370949. #m
 azstep=5 #step in azimuth in npy file
