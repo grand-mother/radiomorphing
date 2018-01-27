@@ -18,4 +18,7 @@ cd grand/sim/hotspot-150x67
 put -f $1
 put -f $2
 
+rm $1
+rm $2
+
 
