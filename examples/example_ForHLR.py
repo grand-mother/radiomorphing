@@ -28,6 +28,7 @@ sys.path.append(join(root_dir, "lib", "python"))
 import radiomorphing
 import retro
 
+PRINT_OUT=False
 
 
 EARTH_RADIUS=6370949. #m
@@ -68,7 +69,7 @@ json_file = join(tmp_dir, filename) # original json file containing a bunch of e
 #print json_file
 
 
-#j=0
+j=0
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
 for event in EventIterator(json_file):#"events-flat.json"): #json files contains a list of events which shall run on one node"
@@ -83,7 +84,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
    #print event["tau_at_decay"][2]
    
    #### to choose one specific event from a json file or test running on cluster
-   #j=j+1
+        j=j+1
    #if j<43: 
         print "\n"
         print "Event ", str(event["tag"]), " started"
@@ -93,14 +94,17 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
         ###DECAY
         decay_pos=event["tau_at_decay"][2]
         height=decay_pos[2]
-        print "decay position: ", decay_pos
+        if PRINT_OUT:
+            print "decay position: ", decay_pos
         decay_pos=decay_pos+np.array([0.,0.,EARTH_RADIUS]) # corrected for earth radius
-        print "decay position after correction: ", decay_pos
+        if PRINT_OUT:
+            print "decay position after correction: ", decay_pos
         
         
         #decay_altitude=event["tau_at_decay"][3] 
         decay_altitude=event["tau_at_decay"][4][2]
-        print "decay decay_altitude: ", decay_altitude
+        if PRINT_OUT:
+            print "decay decay_altitude: ", decay_altitude
         
         #v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed  
         v=event["tau_at_decay"][3]# shower direction, assuming decay products strongly forward beamed  
@@ -109,7 +113,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
         
         ###ANGLES
         theta = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
-        print "theta: ", theta
+        if PRINT_OUT:
+            print "theta: ", theta
         #orthogonal projection of v onto flat plane to get the azimuth 
         x=np.array([1.,0.,0.]) #NS
         y=np.array([0.,1.,0.]) #EW
@@ -118,7 +123,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
         azimuth = np.degrees(np.arccos(np.dot(proj_v, x))) # azimuth in GRAND conv., rt NORTH
         if proj_v[1]<0.: # y component of projection negativ, means azimuth >180deg
             azimuth = 360.-azimuth
-        print "azimuth: ", azimuth
+        if PRINT_OUT:
+            print "azimuth: ", azimuth
         
         
         #### Neutrino energy - of the regenerated neutrino, not the primary one
@@ -136,9 +142,11 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     if float(event["decay"][i][0]) in particle_list: # just for valid particles 
                         pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
                         ep_array[i-1]=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
-                    print "particle ", str(i), "PID:",event["decay"][i][0]," energy in EeV: ", ep_array[i-1]*1e-9 #np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)* 1.e-9 
+                    if PRINT_OUT:
+                        print "particle ", str(i), "PID:",event["decay"][i][0]," energy in EeV: ", ep_array[i-1]*1e-9 #np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)* 1.e-9 
                 ep= np.sum(ep_array)* 1.e-9 # GeV in EeV
-                print "energy in EeV: ", ep
+                if PRINT_OUT:
+                    print "energy in EeV: ", ep
                 
                 ### PID primary
                 #part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
@@ -149,30 +157,52 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     primary="electron"
                 else: # pion-like
                     primary="pion"
-                print primary
+                if PRINT_OUT:
+                    print primary
                 
                 
                 ## create a folder in $TMP for each event
                 out_dir = join(tmp_dir, "InterpolatedSignals", str(event["tag"])) # will be created in $TMP, will be deleted after each event 
                 if not os.path.exists(out_dir):
                     os.makedirs(out_dir)
-                print "folder ", out_dir 
+                if PRINT_OUT:
+                    print "folder ", out_dir 
                 
             
             ##save ANTENNA POSITIONS in anpos.dat for each event
                 antennas = join(out_dir, "antpos.dat") # file of list of desired antennas position -> in out_dir at $TMP
                 correction= np.array([decay_pos[0], decay_pos[1], 0.])
-                print "correction: ",correction
-                print "antenna: ", event["antennas"][0][0:3]
+                if PRINT_OUT:
+                    print "correction: ",correction
+                if PRINT_OUT:
+                    print "antenna: ", event["antennas"][0][0:3]
                 ant=np.copy(event["antennas"])
                 ant= np.delete(ant, np.s_[3:5], axis=1)
                 #ant= np.array(event["antennas"][0][0:3])
                 #print "all antennas ", ant
                 np.savetxt(antennas, ant-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
-                print "antenna corrected: ", event["antennas"][0][0:3]-correction
+                if PRINT_OUT:
+                    print "antenna corrected: ", event["antennas"][0][0:3]-correction
 
 
-
+                #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
+                
+                #set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
+                # ATTENTION: not clear if nu_energy from momentum correct
+                latitude=event["tau_at_decay"][4][0]
+                longitude=event["tau_at_decay"][4][1]
+                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                
+                
+                # following the naming of the tag
+                structure=join("La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) #"{:1.0e}".format(int(nu_energy*1e18))
+                if PRINT_OUT:
+                    print structure
+                structure=join(data_dir, structure)
+                if not os.path.exists(structure): # later this is not necessary with $TMP
+                    os.makedirs(structure)
+                    
+                      
 
                 ##### Start radio morphing
 
@@ -188,22 +218,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 radiomorphing.process(sim_dir, shower, antennas, out_dir)
                 
                 
-                #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
-                
-                #set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
-                # ATTENTION: not clear if nu_energy from momentum correct
-                latitude=event["tau_at_decay"][4][0]
-                longitude=event["tau_at_decay"][4][1]
-                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
-                
-                
-                # following the naming of the tag
-                structure=join("La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) #"{:1.0e}".format(int(nu_energy*1e18))
-                print structure
-                structure=join(data_dir, structure)
-                if not os.path.exists(structure): # later this is not necessary with $TMP
-                    os.makedirs(structure)
-                        
+
 
                 
                 ##### VOLTAGE COMPUTATION
@@ -222,7 +237,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     #newname= join(data_dir, str(event["tag"])+".voltage.json")
                     #shutil.copy(cvjson_file,newname)
                     shutil.move(cvjson_file, structure)
-                    print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
+                    if PRINT_OUT:
+                        print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
                 
                 
                 
@@ -235,47 +251,28 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
                 #shutil.move(out_dir, data_dir) 
-                print tar_name
+                if PRINT_OUT:
+                    print tar_name
                 shutil.move(tar_name, structure) 
                 shutil.rmtree(out_dir)
                 
                 
-                
-                
                 #### Upload to iRODS: write a shell script and start it
                 ##import subprocess
-                ##subprocess.call(['./test.sh'])
+                if j>1:
+                    print p.communicate()
 
-                #tgzfile=structure+"/"+str(event["tag"])+".tgz"
-                #jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                
+                tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                #p=subprocess.Popen(['./upload_test.sh','%s' %(tgzfile), '%s' %(jfile)])     
+                p=subprocess.Popen(['./upload.ish','%s' %(tgzfile), '%s' %(jfile)])  
+                
+                
 
-                #sh_file= tmp_dir + "upload.ish"
-                #print sh_file
-                #inpfile = open(sh_file,"w+")
-                
-                #inpfile.write("#!/project/fh1-project-huepra/le6232/soft/ishell/bin/ishell")
-                #inpfile.write("# Example script for copying data from fh1 to iRODS. Note")
-                #inpfile.write("# that you need to set your iRODS environment first.")
-                #inpfile.write("#")
-                #inpfile.write("# -----------------------------------------")
-                #inpfile.write("# Scheduler options")
-                #inpfile.write("# -----------------------------------------")
-                #inpfile.write("#MSUB -N put-events")
-                #inpfile.write("#MSUB -q singlenode")
-                #inpfile.write("#MSUB -l nodes=1:ppn=1")
-                #inpfile.write("#MSUB -l walltime=24:00:00")
-                #inpfile.write("#MSUB -l pmem=3gb")
-                #inpfile.write("#MSUB -v PATH, PYTHONPATH")
-                #inpfile.write("# -----------------------------------------")
-                #inpfile.write("put -f {:s}\n".format(tgzfile))
-                #inpfile.write("put -f {:s}\n".format(jfile))
-                #inpfile.write("#")
-                
-                #inpfile.close()
-                
-                #subprocess.call([sh_file])
-                
-                #os.remove(sh_file)
+
+
+
                 
                 
                 
