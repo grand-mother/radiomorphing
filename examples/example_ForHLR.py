@@ -277,15 +277,13 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
-                #p=subprocess.Popen(['./upload_test.sh','%s' %(tgzfile), '%s' %(jfile)])     
-                #p=subprocess.Popen(['/project/fh1-project-huepra/qc8087/radiomorphing/examples/upload.ish','%s' %(tgzfile), '%s' %(jfile)]) 
+               
                 
-                
-                #print str("'ishell -c ") +str('"put ') + str(tgzfile) + str(' grand/sim/hotspot-150x67"')+ str("#")
-                
-                cmd1='ishell -c "put %s grand/sim/hotspot-150x67km2"' %(tgzfile)
+                #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
+                #If one of the commands fails, then all other commands following it won't be executed.
+                cmd1='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(tgzfile,tgzfile )
                 p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
-                cmd2='ishell -c "put %s grand/sim/hotspot-150x67km2"' %(jfile) 
+                cmd2='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(jfile, jfile) 
                 p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT )  
                 
                 
