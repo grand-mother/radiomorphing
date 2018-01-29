@@ -6,6 +6,7 @@ import numpy as np
 import shutil
 #import time
 import subprocess
+import shlex
 
 #import computevoltage_ForHLR as cv
 import computeVoltage_massProd as cv
@@ -280,10 +281,15 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #p=subprocess.Popen(['/project/fh1-project-huepra/qc8087/radiomorphing/examples/upload.ish','%s' %(tgzfile), '%s' %(jfile)]) 
                 
                 
-                prc1= str("'ishell -c ") +str('"put ') + str(tgzfile) + str(' grand/sim/hotspot-150x67"')+ str("'")
-                prc2= str("'ishell -c ") +str('"put ') + str(jfile) + str(' grand/sim/hotspot-150x67"')+ str("'")
-                p=subprocess.Popen(prc1)
-                p1=subprocess.Popen(prc2)  
+                #print str("'ishell -c ") +str('"put ') + str(tgzfile) + str(' grand/sim/hotspot-150x67"')+ str("#")
+                
+                cmd1='ishell -c "put %s grand/sim/hotspot-150x67km2"' %(tgzfile)
+                p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
+                cmd2='ishell -c "put %s grand/sim/hotspot-150x67km2"' %(jfile) 
+                p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT )  
+                
+                
+
              
                 
 
