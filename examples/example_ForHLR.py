@@ -236,7 +236,11 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     
                     #newname= join(data_dir, str(event["tag"])+".voltage.json")
                     #shutil.copy(cvjson_file,newname)
-                    shutil.move(cvjson_file, structure)
+                    try:
+                        shutil.move(cvjson_file, structure)
+                    except shutil.Error: 
+                        pass
+                            
                     if PRINT_OUT:
                         print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
                 
@@ -253,8 +257,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #shutil.move(out_dir, data_dir) 
                 if PRINT_OUT:
                     print tar_name
-                shutil.move(tar_name, structure) 
-                shutil.rmtree(out_dir)
+                try:    
+                    shutil.move(tar_name, structure) 
+                except: 
+                    pass
+                try:
+                    shutil.rmtree(out_dir)
+                except:
+                    pass
                 
                 
                 #### Upload to iRODS: write a shell script and start it
