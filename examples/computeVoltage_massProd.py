@@ -121,7 +121,7 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
        reactance=reactance3
        theta=theta3
        phi=phi3
-       lefftheta=leffphi3
+       lefftheta=lefftheta3
        leffphi=leffphi3
        phasetheta=phasetheta3
        phasephi=phasephi3
