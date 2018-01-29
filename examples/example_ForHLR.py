@@ -278,13 +278,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
                 #p=subprocess.Popen(['./upload_test.sh','%s' %(tgzfile), '%s' %(jfile)])     
                 #p=subprocess.Popen(['/project/fh1-project-huepra/qc8087/radiomorphing/examples/upload.ish','%s' %(tgzfile), '%s' %(jfile)]) 
-                p=subprocess.Popen(['ishell -c "put %s grand/sim/hotspot-150x67"' %(tgzfile) ])
-                p1=subprocess.Popen(['ishell -c "put %s grand/sim/hotspot-150x67"' %(jfile) ])  
+                
+                
+                prc1= str("'ishell -c ") +str('"put ') + str(tgzfile) + str(' grand/sim/hotspot-150x67"')+ str("'")
+                prc2= str("'ishell -c ") +str('"put ') + str(jfile) + str(' grand/sim/hotspot-150x67"')+ str("'")
+                p=subprocess.Popen(prc1)
+                p1=subprocess.Popen(prc2)  
              
                 
-
-
-
 
                 
                 
