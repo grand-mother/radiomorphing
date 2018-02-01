@@ -290,7 +290,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
                 #If one of the commands fails, then all other commands following it won't be executed.
-                cmd1='ishell -c "mkdir %s" && ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(folder, tgzfile,tgzfile )
+                cmd1='ishell -c "mkdir grand/sim/%s" && ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(folder, tgzfile,tgzfile )
                 try:
                     p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
                 except OSError:
