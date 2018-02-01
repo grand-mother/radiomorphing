@@ -199,7 +199,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 
                 # following the naming of the tag
-                structure=join("La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -334,9 +334,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 
                 # set up folder system in irods 
-                folder=run+"/"+structure
-                cmd='ishell -c "mkdir grand/sim/%s"' %(folder)
-                print cmd
+                folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
+                cmd='ishell -c "mkdir %s"' %(folder)
                 try:
                     p0=subprocess.Popen(shlex.split(cmd))#, stdout=PIPE, stderr=STDOUT )
                 except OSError:
@@ -354,7 +353,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 except OSError:
                     print cmd1 , " failed"
                     #continue
-                cmd2='ishell -c "put %s %s' %(jfile, folder) 
+                cmd2='ishell -c "put %s %s"' %(jfile, folder) 
                 try:
                     p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
                     os.remove(jfile)
