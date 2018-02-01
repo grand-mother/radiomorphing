@@ -302,7 +302,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     shutil.move(tar_name, structure) 
                 except: 
                     pass
-                remove output folder
+                #remove output folder
                 try:
                     shutil.rmtree(out_dir)
                 except:
@@ -317,29 +317,31 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     try:
                         print p0.communicate()
                     except NameError:
-                        continue
+                        print "process not available"
                     
                     try:
                         print p.communicate()
                     except NameError:
-                        continue
+                        print "process not available"
                     try:
                         print p1.communicate()
                     except NameError:
-                        continue
+                        print "process not available"
                 
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
                
-                folder=run+"/"+structure
+
                 
                 # set up folder system in irods 
                 folder=run+"/"+structure
                 cmd='ishell -c "mkdir grand/sim/%s"' %(folder)
+                print cmd
                 try:
                     p0=subprocess.Popen(shlex.split(cmd))#, stdout=PIPE, stderr=STDOUT )
                 except OSError:
-                    continue
+                    print cmd , " failed"
+                    #continue
                 
                 
                 #### file upload
@@ -350,13 +352,15 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
                     os.remove(tgzfile)
                 except OSError:
-                    continue
+                    print cmd1 , " failed"
+                    #continue
                 cmd2='ishell -c "put %s %s' %(jfile, folder) 
                 try:
                     p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
                     os.remove(jfile)
                 except OSError:
-                    continue
+                    print cmd2 , " failed"
+                    #continue
                 
                 
 
