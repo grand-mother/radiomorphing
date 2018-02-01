@@ -238,15 +238,15 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     
                     
-                    #newname= join(data_dir, str(event["tag"])+".voltage.json")
-                    #shutil.copy(cvjson_file,newname)
-                    try:
-                        shutil.move(cvjson_file, structure)
-                    except shutil.Error: 
-                        pass
+                    ##newname= join(data_dir, str(event["tag"])+".voltage.json")
+                    ##shutil.copy(cvjson_file,newname)
+                    #try:
+                        #shutil.move(cvjson_file, structure)
+                    #except shutil.Error: 
+                        #pass
                             
-                    if PRINT_OUT:
-                        print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
+                    #if PRINT_OUT:
+                        #print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
                 
                 
                 
@@ -256,57 +256,98 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 tar.add(out_dir, arcname=str(event["tag"]))
                 tar.close()
                 
-                
-                # copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
-                #shutil.move(out_dir, data_dir) 
-                if PRINT_OUT:
-                    print tar_name
-                try:    
-                    shutil.move(tar_name, structure) 
-                except: 
-                    pass
-                try:
-                    shutil.rmtree(out_dir)
-                except:
-                    pass
-                
-                
-                #### Upload to iRODS: write a shell script and start it
-                ##import subprocess
+                # set up folder system in irods 
                 if j>1:
                     try:
                         print p.communicate()
                     except NameError:
                         continue
+                    
+                folder=run+"/"+structure
+                cmd='ishell -c "mkdir grand/sim/%s"' %(folder)
+                try:
+                    p0=subprocess.Popen(shlex.split(cmd0))#, stdout=PIPE, stderr=STDOUT )
+                except OSError:
+                    continue
+                
+                # tarname upload to irods
+                if j>1:
                     try:
-                        print p1.communicate()
+                        print p.communicate()
                     except NameError:
                         continue
                 
-                tgzfile=structure+"/"+str(event["tag"])+".tgz"
-                jfile=structure+"/"+str(event["tag"])+".voltage.json"
-               
-                folder=run+"/"+structure
-                
                 #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
                 #If one of the commands fails, then all other commands following it won't be executed.
-                cmd1='ishell -c "mkdir grand/sim/%s" && ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(folder, tgzfile,tgzfile )
+                cmd1=' ishell -c "put %s grand/sim/%s/"' %( tarname, run)
                 try:
                     p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
                 except OSError:
                     continue
-                cmd2='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(jfile, jfile) 
+                
+                # upload of json file to irods
+                jfile=cvjson_file #structure+"/"+str(event["tag"])+".voltage.json"
+                cmd2='ishell -c "put %s grand/sim/%s/"' %( jfile, run)
                 try:
                     p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
                 except OSError:
                     continue
                 
                 
+                ## copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
+                ##shutil.move(out_dir, data_dir) 
+                #if PRINT_OUT:
+                    #print tar_name
+                #try:    
+                    #shutil.move(tar_name, structure) 
+                #except: 
+                    #pass
+                # remove output folder
+                try:
+                    shutil.rmtree(out_dir)
+                except:
+                    pass
+                
+                
+                ##### Upload to iRODS: write a shell script and start it
+                ###import subprocess
+                #if j>1:
+                    ##try:
+                        ##print p.communicate()
+                    ##except NameError:
+                        ##continue
+                    #try:
+                        #print p1.communicate()
+                    #except NameError:
+                        #continue
+                
+                #tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                #jfile=structure+"/"+str(event["tag"])+".voltage.json"
+               
+                #folder=run+"/"+structure
+                
+                ##If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
+                ##If one of the commands fails, then all other commands following it won't be executed.
+                #cmd1='ishell -c "mkdir grand/sim/%s" && ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(folder, tgzfile,tgzfile )
+                #try:
+                    #p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
+                #except OSError:
+                    #continue
+                #cmd2='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(jfile, jfile) 
+                #try:
+                    #p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
+                #except OSError:
+                    #continue
+                
+                
 
              
                 
 
-                
+try:                
+    print p0.communicate()
+except NameError:
+    pass                 
 try:                
     print p.communicate()
 except NameError:
