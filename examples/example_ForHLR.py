@@ -8,8 +8,9 @@ import shutil
 import subprocess
 import shlex
 
-#import computevoltage_ForHLR as cv
-import computeVoltage_massProd as cv
+##import computevoltage_ForHLR as cv
+import computeVoltage_HorAnt as cv
+#import computeVoltage_massProd_old as cv
 
 
 ''' call that script via: python example.py *json path_to_TMP
@@ -271,9 +272,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #### Upload to iRODS: write a shell script and start it
                 ##import subprocess
                 if j>1:
-                    print p.communicate()
-                    print p1.communicate()
-
+                    try:
+                        print p.communicate()
+                    except NameError:
+                        continue
+                    try:
+                        print p1.communicate()
+                    except NameError:
+                        continue
                 
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
@@ -282,9 +288,15 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
                 #If one of the commands fails, then all other commands following it won't be executed.
                 cmd1='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(tgzfile,tgzfile )
-                p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
+                try:
+                    p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
+                except OSError:
+                    continue
                 cmd2='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(jfile, jfile) 
-                p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT )  
+                try:
+                    p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
+                except OSError:
+                    continue
                 
                 
 
@@ -292,9 +304,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
 
                 
-                
-print p.communicate()
-print p1.communicate()
+try:                
+    print p.communicate()
+except NameError:
+    pass   
+try:
+    print p1.communicate()
+except NameError:
+    pass 
 print "Job done"
 
 
