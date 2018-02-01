@@ -20,7 +20,7 @@ import os
 run="hotspot-150x67km2"
 
 ### path to where one finds the json files which shall be used
-path_json= '/project/fh1-project-huepra/le6232/data/retro/'+run+'/seeds/'
+#path_json= '/project/fh1-project-huepra/le6232/data/retro/'+run+'/seeds/'
 path_json= '/project/fh1-project-huepra/qc8087/radiomorphing/examples/seeds/'+run+'/taus/'
 
 
