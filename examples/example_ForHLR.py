@@ -259,14 +259,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # set up folder system in irods 
                 if j>1:
                     try:
-                        print p.communicate()
+                        print p0.communicate()
                     except NameError:
                         continue
                     
                 folder=run+"/"+structure
                 cmd='ishell -c "mkdir grand/sim/%s"' %(folder)
                 try:
-                    p0=subprocess.Popen(shlex.split(cmd0))#, stdout=PIPE, stderr=STDOUT )
+                    p0=subprocess.Popen(shlex.split(cmd))#, stdout=PIPE, stderr=STDOUT )
                 except OSError:
                     continue
                 
