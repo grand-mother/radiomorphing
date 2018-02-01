@@ -388,6 +388,11 @@ def inputfromtxt(input_file_path):
             injh = float(line.split(' ',-1)[2])
         if 'PrimaryEnergy' in line:
             energy = float(line.split(' ',-1)[1])
+            unit= str(line.split(' ',-1)[2])
+            if unit == "eV\n":
+                energy = energy *1e-18
+            if unit == "GeV\n":
+                energy = energy *1e-9
         if 'PrimaryParticle' in line:
             primarytype = str(line.split(' ',-1)[1])
             if primarytype[-1]=='\n':
@@ -409,7 +414,6 @@ def inputfromtxt(input_file_path):
     except NameError:
         primarytype = None
 
-    energy = energy *1e-18
 
     if primarytype=='RASPASSMulti':
         tmp = RASPASSMulti_line.split(' ',-1)
@@ -428,6 +432,8 @@ def inputfromtxt(input_file_path):
         primarytype='pion'
 
     return zen,azim,energy,injh,primarytype
+
+
 
 #===========================================================================================================
 def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection_height, primary,json_file=None):
