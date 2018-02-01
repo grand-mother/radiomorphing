@@ -17,8 +17,10 @@
 
 import os
 
+run="hotspot-150x67km2"
+
 ### path to where one finds the json files which shall be used
-path_json= '/project/fh1-project-huepra/le6232/data/retro/hotspot-150x67/seeds/'
+path_json= '/project/fh1-project-huepra/le6232/data/retro/'+run+'/seeds/'
 
 # path to the scripts for radiomorphing
 path_script='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
@@ -37,7 +39,7 @@ nfile.write('#!/bin/bash\n')
 # producing bash files to run on multiple cores
 for i in range(0, len(json_file )):
 
-        fname='hotspot-150x67_job'+str(i)+'.sh' # filename of each job
+        fname=run+'_job'+str(i)+'.sh' # filename of each job
         
         command='msub '+str(fname)+'\n'
         nfile.write(command)

@@ -42,6 +42,8 @@ simref_dir = join(data_dir, "GrandEventADetailed2") # will be copied from $PROJE
 # ATTENTION: set here the path to the temporary storage at evry core, for testing set to test_dir created
 tmp_dir=sys.argv[2] #join(root_dir, "examples", "test_temp") # "$TMP" at core
 
+run=sys.argv[3]
+
 if not os.path.exists(tmp_dir): # later this is nit necessary with $TMP
     os.makedirs(tmp_dir)
     print "PATH to TMP ", tmp_dir 
@@ -284,10 +286,11 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
                
+                folder=run+"/"+structure
                 
                 #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
                 #If one of the commands fails, then all other commands following it won't be executed.
-                cmd1='ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(tgzfile,tgzfile )
+                cmd1='ishell -c "mkdir %s" && ishell -c "put %s grand/sim/hotspot-150x67km2" && rm %s' %(folder, tgzfile,tgzfile )
                 try:
                     p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
                 except OSError:
