@@ -85,6 +85,6 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
         X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * step*100. #(deltah*100) *abs(1./np.cos(np.pi-zen2)) # Xmax in g/cm2, slanted = Xmax, vertical/ cos(theta); density in g/cm3, h: m->100cm, np.pi-zen2 since it is defined as where the showers comes from, abs(cosine) so correct for minus values
     
     
-    print "decay to Xmax: ", ai, " Xmaxheight ", h
+    #print "decay to Xmax: ", ai, " Xmaxheight ", h
     
     return h, ai # Xmax_height in m, Xmax_distance in m
