@@ -85,7 +85,7 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
         # rotx = np.array([[1,0,0],[0,cb,-sb],[0,sb,cb]])
         # rotx = np.linalg.inv(rotx)  # Referential rotates ==> use inverse matrix
         roty = np.array([[ca,0,sa],[0,1,0],[-sa,0,ca]])
-        #roty = np.linalg.inv(roty)  # Not to be used since y is facing backwards in (x,y,z)
+        roty = np.linalg.inv(roty)  # Not to be used since y is facing backwards in (x,y,z)
         rotz = np.array([[cb,-sb,0],[sb,cb,0],[0,0,1]])
         rotz = np.linalg.inv(rotz)
         rotyz=roty.dot(rotz)  # beta and then alpha rotation. This induces a EW component for x arm
