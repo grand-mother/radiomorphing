@@ -60,9 +60,9 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
     def wait_for_upload():
         _, err = p.communicate()
         if not err:
-            os.remove(src1)
-            os.remove(src2)
-            #return
+            #os.remove(src1)
+            #os.remove(src2)
+            return
         elif maxtrials <= 1:
             raise RuntimeError(err)
 
@@ -72,9 +72,9 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
             _, err = p.communicate()
             if err:
                 raise RuntimeError(err)
-            if not err:
-                os.remove(src1)
-                os.remove(src2)
+            #if not err:
+                #os.remove(src1)
+                #os.remove(src2)
 
         irods_retry(upload, maxtrials - 1, wait)
 
@@ -146,6 +146,8 @@ j=0
 
 # upload in background with synchronization
 wait_for_upload = lambda: None  # before loop starts
+file1=None
+file2=None
 
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
@@ -429,6 +431,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # it fails a RunetimeError is raised.
                 try:
                     wait_for_upload()
+                    os.remove(file1)
+                    os.remove(file2)
                 except:
                     print "Uploading failed in waiting phase"
     
@@ -436,6 +440,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 try: 
                     #wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
                     wait_for_upload = irods_upload( tgzfile,jfile, folderiRod, 5, 6.)
+                    file1=tgzfile
+                    file2=jfile
 
                 except:
                     print "Uploading failed "
