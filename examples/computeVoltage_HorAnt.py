@@ -6,8 +6,8 @@ import math
 import numpy as np
 #import pylab as pl
 
-wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
-#wkdir = './'
+#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
+wkdir = './'
 
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
@@ -436,7 +436,7 @@ def inputfromtxt(input_file_path):
 
 
 #===========================================================================================================
-def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection_height, primary,json_file=None):
+def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy, injection_height, primary,json_file=None):
 #===========================================================================================================
 
     
@@ -451,9 +451,12 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
         
         ## json file containing additional data for analysis     
         filename = str(showerID) + ".voltage.json"
-        path2, folder2 = os.path.split(path) # path2 should be one folder level up than traces (=path)
-        #path2 = join(path_json, filename)
-        path2 = join(path2, filename)
+        if path==path_out:
+            path2, folder2 = os.path.split(path) # path2 should be one folder level up than traces (=path)
+            #path2 = join(path_json, filename)
+            path2 = join(path2, filename)
+        else:
+            path2= join(path_out, filename)
         log_event = EventLogger(path=path2)
 
     voltage=[]
@@ -587,7 +590,7 @@ def compute(opt_input,path, effective,zenith_sim, azimuth_sim, energy, injection
 
         #pl.savetxt(path+'out_'+str(l)+'.txt', (timeEW, voltage_EW, voltage_NS), newline='\r\n')#, voltage_NS)) # is not working correctly
         if np.size(timeEW)>0:   # Dat was computed
-          f = file(path+'/out_'+str(l)+'.txt',"w")
+          f = file(path_out+'/out_'+str(l)+'.txt',"w")
           #print "OUTFILE : ", path+'/out_'+str(l)+'.txt'
           for i in np.arange(len(timeEW)):
             print >>f,"%1.5e	%1.2e	%1.2e	%1.2e" % (timeNS[i], voltage_NS[i], voltage_EW[i], voltage_vert[i] ) # same number of digits as input
@@ -700,6 +703,7 @@ if __name__ == '__main__':
 
     # which efield trace do you wanna read in. to be consistent the script works with the antenna ID
     path=sys.argv[3] #folder containing the traces and where the output should go to
+    path_out=sys.argv[3] #[4] # hand over path to outputfolder as 4th argument if you like
 
     if opt_input=='txt':
         # Read the ZHAireS input (.inp) file to extract the primary type, the energy, the injection height and the direction
@@ -723,6 +727,6 @@ if __name__ == '__main__':
     #print 'shower = ',zenith_sim,azimuth_sim,energy
     #print "VOLTAGE COMPUTATION STARTED"
 
-    compute(opt_input,path, effective, zenith_sim, azimuth_sim, energy, injection_height, primary,json_file)
+    compute(opt_input,path, path_out, effective, zenith_sim, azimuth_sim, energy, injection_height, primary,json_file)
 
     #print "VOLTAGE COMPUTED"

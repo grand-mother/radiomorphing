@@ -165,7 +165,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     print primary
                 
                 
-                ## create a folder in $TMP for each event
+                ## create a folder in $TMP for each event, output dir for radiomorphed folder
                 out_dir = join(tmp_dir, "InterpolatedSignals", str(event["tag"])) # will be created in $TMP, will be deleted after each event 
                 if not os.path.exists(out_dir):
                     os.makedirs(out_dir)
@@ -233,7 +233,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     
                     #cv.compute(out_dir, alpha_sim, effective, json_file)
                     #### cv produces a new jsonfile named eventtag.voltage.json in tmp_dir for every event in json_file
-                    cv.compute('json',out_dir, effective,theta, azimuth, ep, height, primary,json_file)
+                    cv.compute('json',out_dir,out_dir, effective,theta, azimuth, ep, height, primary,json_file)
                     
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     
@@ -371,6 +371,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 except OSError:
                     print cmd2 , " failed"
                     #continue
+                    
                 
                 
 
