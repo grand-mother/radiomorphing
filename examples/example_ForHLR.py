@@ -364,7 +364,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 except OSError:
                     print cmd1 , " failed"
                     #continue
-                cmd2='ishell -c "put %s %s/"; ' %(jfile, folder, jfile) 
+                cmd2='ishell -c "put %s %s/"; rm %s' %(jfile, folder, jfile) 
                 try:
                     p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
                     os.remove(jfile)
