@@ -360,14 +360,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 cmd1='ishell -c "put %s %s/"; rm %s' %(tgzfile,folder, tgzfile)
                 try:
                     p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
-                    os.remove(tgzfile)
+                    #os.remove(tgzfile)
                 except OSError:
                     print cmd1 , " failed"
                     #continue
                 cmd2='ishell -c "put %s %s/"; rm %s' %(jfile, folder, jfile) 
                 try:
                     p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
-                    os.remove(jfile)
+                    #os.remove(jfile)
                 except OSError:
                     print cmd2 , " failed"
                     #continue
