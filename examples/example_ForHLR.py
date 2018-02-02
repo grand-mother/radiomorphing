@@ -22,7 +22,7 @@ def irods_makedirs(root, *args):
     for path in args:
         cmd += ["mkdir " + path, "cd " + path]
     cmd = "ishell -c '{:}'".format(" ; ".join(cmd))
-    print cmd
+    #print cmd
 
     
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, close_fds=True)
@@ -51,8 +51,8 @@ def irods_retry(action, maxtrials, wait, *args):
 def irods_upload(src1, src2, dst, maxtrials, wait):
     """Manager for uploading a file via iRODS
     """
-    cmd = "ishell -c 'cd {:} ; put -f {:}'".format(dst, src1, src2)
-    print cmd
+    cmd = "ishell -c 'cd {:} ; put -f {:} ; put -f {:}'".format(dst, src1, src2)
+    #print cmd
     def spawn():
         return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     p = spawn()
