@@ -418,20 +418,20 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
                     irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1", folder1, folder2, folder3)
-                except RunetimeError:
+                except:
                     print "failed creating ", folderiRod
 
                 # Wait for the upload of the previous event before uploading a new one. Note that if
                 # it fails a RunetimeError is raised.
                 try:
                     wait_for_upload()
-                except RunetimeError:
+                except:
                     print "Uploading failed in waiting phase"
     
                 # Then trigger the upload of the current event: move folder structure (=folder4 with file at $project) into folderiRod (iRod)
                 try: 
                     wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
-                except RunetimeError:
+                except:
                     print "Uploading failed "
  
  
