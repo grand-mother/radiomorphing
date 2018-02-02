@@ -58,7 +58,8 @@ def irods_upload(src, dst, maxtrials, wait):
     def wait_for_upload():
         _, err = p.communicate()
         if not err:
-            return
+            os.remove(src)
+            #return
         elif maxtrials <= 1:
             raise RuntimeError(err)
 
@@ -68,6 +69,8 @@ def irods_upload(src, dst, maxtrials, wait):
             _, err = p.communicate()
             if err:
                 raise RuntimeError(err)
+            if not err:
+                os.remove(src)
 
         irods_retry(upload, maxtrials - 1, wait)
 
@@ -413,14 +416,23 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
-                irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1", folder1, folder2, folder3)
+                try:
+                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1", folder1, folder2, folder3)
+                except RunetimeError:
+                    print "failed creating ", folderiRod
 
                 # Wait for the upload of the previous event before uploading a new one. Note that if
                 # it fails a RunetimeError is raised.
-                wait_for_upload()
+                try:
+                    wait_for_upload()
+                except RunetimeError:
+                    print "Uploading failed in waiting phase"
     
                 # Then trigger the upload of the current event: move folder structure (=folder4 with file at $project) into folderiRod (iRod)
-                wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
+                try: 
+                    wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
+                except RunetimeError:
+                    print "Uploading failed "
  
  
 print "Job done"
