@@ -4,13 +4,75 @@ from os.path import split, join, realpath
 import sys
 import numpy as np
 import shutil
-#import time
+import time
 import subprocess
 import shlex
 
 ##import computevoltage_ForHLR as cv
 import computeVoltage_HorAnt as cv
 #import computeVoltage_massProd_old as cv
+
+#####################################################################
+#  iRODS functions
+#####################################################################
+def irods_makedirs(root, *args):
+    """Make collections recursivelly on iRODS
+    """
+    cmd = ["cd " + root]
+    for path in args:
+        cmd += ["mkdir " + path, "cd " + path]
+    cmd = "ishell -c '{:}'".format(" ; ".join(cmd))
+
+    
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, close_fds=True)
+    out, err = p.communicate()
+    err = "\n".join([line for line in err.split("\n")
+                     if not line.startswith("mkdir: cannot create collection")])
+    if err:
+        raise RuntimeError(err)
+
+
+def irods_retry(action, maxtrials, wait, *args):
+    """Encapsulate an iRODS command with re-trials in case of faillure
+    """
+    for i in xrange(maxtrials):
+        try:
+            action(*args)
+        except RuntimeError as e:
+            if i < maxtrials - 1:
+                time.sleep(wait)
+            else:
+                raise e
+        else:
+            break
+
+
+def irods_upload(src, dst, maxtrials, wait):
+    """Manager for uploading a file via iRODS
+    """
+    cmd = "ishell -c 'cd {:} ; put -f {:}'".format(dst, src)
+    def spawn():
+        return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+    p = spawn()
+
+    def wait_for_upload():
+        _, err = p.communicate()
+        if not err:
+            return
+        elif maxtrials <= 1:
+            raise RuntimeError(err)
+
+        # The Upload failed. Let us retry in blocking mode.
+        def upload():
+            p = spawn()
+            _, err = p.communicate()
+            if err:
+                raise RuntimeError(err)
+
+        irods_retry(upload, maxtrials - 1, wait)
+
+    return wait_for_upload
+#####################################################################
 
 
 ''' call that script via: python example.py *json path_to_TMP
@@ -74,6 +136,10 @@ json_file = join(tmp_dir, filename) # original json file containing a bunch of e
 
 
 j=0
+
+# upload in background with synchronization
+wait_for_upload = lambda: None  # before loop starts
+
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
 for event in EventIterator(json_file):#"events-flat.json"): #json files contains a list of events which shall run on one node"
@@ -197,9 +263,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 longitude=event["tau_at_decay"][4][1]
                 energy=event["tau_at_decay"][1] *1e9 # GeV to eV
                 
-                
+                folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                folder2="E{:1.0e}".format(int(energy))
+                folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 # following the naming of the tag
-                structure=join(run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run, folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -292,7 +361,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     #p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
                 #except OSError:
                     #continue
-                
+           
                 
                 ## copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
                 #shutil.move(out_dir, data_dir) 
@@ -308,91 +377,100 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 except:
                     pass
                 
-                
-                
+ 
                 
                 #### Upload to iRODS: write a shell script and start it
                 ##import subprocess
-                if j>1:
-                    try:
-                        print p0.communicate()
-                    except NameError:
-                        print "process not available"
-                    try:
-                        print p.communicate()
-                    except NameError:
-                        print "process not available"
-                    try:
-                        print p1.communicate()
-                    except NameError:
-                        print "process not available"
+                #if j>1:
+                    #try:
+                        #print p0.communicate()
+                    #except NameError:
+                        #print "process not available"
+                    #try:
+                        #print p.communicate()
+                    #except NameError:
+                        #print "process not available"
+                    #try:
+                        #print p1.communicate()
+                    #except NameError:
+                        #print "process not available"
                 
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
                 print "tgzfile ", tgzfile
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
                 print "jfile ", jfile
-               
-
+            
                 
                 # set up folder system in irods 
                 #folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
                 #cmd_='ishell -c "mkdir %s"' %(folder)
-                folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
-                folder2="E{:1.0e}".format(int(energy))
-                folder3="Z"+str(int(event["tau_at_decay"][5][0]))
-                folder4="A"+str(int(event["tau_at_decay"][5][1]))
-                folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
+                #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                #folder2="E{:1.0e}".format(int(energy))
+                #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                #folder4="A"+str(int(event["tau_at_decay"][5][1]))
+                #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
+                folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3 ) 
+                
+                # creating directories. This is blocking until it succeeds.
+                # It will retry at most 5 times and will wait 6s between trials.
+                irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1", folder1, folder2, folder3)
 
-                
-                if j>1:
-                    cmd='ishell -c "cd grand/sim; cd %s ; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
-                else: 
-                    cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
-                try:
-                    p0=subprocess.Popen(shlex.split(cmd))#,  stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
-                    
-                except OSError:
-                    print cmd , " failed"
-                    #continue
-                
-                
-                #### file upload
-                #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
-                #If one of the commands fails, then all other commands following it won't be executed.
-                cmd1='ishell -c "put %s %s/"' %(tgzfile,folder)
-                try:
-                    p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
-                    #os.remove(tgzfile)
-                except OSError:
-                    print cmd1 , " failed"
-                    #continue
-                cmd2='ishell -c "put %s %s/"' %(jfile, folder) 
-                try:
-                    p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
-                    #os.remove(jfile)
-                except OSError:
-                    print cmd2 , " failed"
-                    #continue
-                    
-                
-                
-
-             
-                
-
-try:                
-    print p0.communicate()
-except NameError:
-    pass                 
-try:                
-    print p.communicate()
-except NameError:
-    pass   
-try:
-    print p1.communicate()
-except NameError:
-    pass 
+                # Wait for the upload of the previous event before uploading a new one. Note that if
+                # it fails a RunetimeError is raised.
+                wait_for_upload()
+    
+                # Then trigger the upload of the current event: move folder structure (=folder4 with file at $project) into folderiRod (iRod)
+                wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
+ 
+ 
 print "Job done"
+
+
+                #if j>1:
+                    #cmd='ishell -c "cd grand/sim; cd %s ; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
+                #else: 
+                    #cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
+                #try:
+                    #p0=subprocess.Popen(shlex.split(cmd))#,  stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+                    
+                #except OSError:
+                    #print cmd , " failed"
+                    ##continue
+                
+                
+                ##### file upload
+                ##If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
+                ##If one of the commands fails, then all other commands following it won't be executed.
+                #cmd1='ishell -c "put %s %s/"' %(tgzfile,folder)
+                #try:
+                    #p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
+                    ##os.remove(tgzfile)
+                #except OSError:
+                    #print cmd1 , " failed"
+                    ##continue
+                #cmd2='ishell -c "put %s %s/"' %(jfile, folder) 
+                #try:
+                    #p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
+                    ##os.remove(jfile)
+                #except OSError:
+                    #print cmd2 , " failed"
+                    ##continue
+                    
+
+
+#try:                
+    #print p0.communicate()
+#except NameError:
+    #pass                 
+#try:                
+    #print p.communicate()
+#except NameError:
+    #pass   
+#try:
+    #print p1.communicate()
+#except NameError:
+    #pass 
+#print "Job done"
 
 
 
