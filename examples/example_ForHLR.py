@@ -329,15 +329,26 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                         print "process not available"
                 
                 tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                print "tgzfile ", tgzfile
                 jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                print "jfile ", jfile
                
 
                 
                 # set up folder system in irods 
-                folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
-                cmd='ishell -c "mkdir %s"' %(folder)
+                #folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
+                #cmd_='ishell -c "mkdir %s"' %(folder)
+                folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                folder2="E{:1.0e}".format(int(energy))
+                folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                folder4="A"+str(int(event["tau_at_decay"][5][1]))
+                folder=join("grand/sim",run, folder1, folder2, folder3, folder4 ) 
+
+                
+                cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
                 try:
-                    p0=subprocess.Popen(shlex.split(cmd))#, stdout=PIPE, stderr=STDOUT )
+                    p0=subprocess.Popen(shlex.split(cmd))#,  stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+                    
                 except OSError:
                     print cmd , " failed"
                     #continue
