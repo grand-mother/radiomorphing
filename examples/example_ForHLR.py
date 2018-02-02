@@ -22,6 +22,7 @@ def irods_makedirs(root, *args):
     for path in args:
         cmd += ["mkdir " + path, "cd " + path]
     cmd = "ishell -c '{:}'".format(" ; ".join(cmd))
+    print cmd
 
     
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, close_fds=True)
@@ -47,10 +48,11 @@ def irods_retry(action, maxtrials, wait, *args):
             break
 
 
-def irods_upload(src, dst, maxtrials, wait):
+def irods_upload(src1, src2, dst, maxtrials, wait):
     """Manager for uploading a file via iRODS
     """
-    cmd = "ishell -c 'cd {:} ; put -f {:}'".format(dst, src)
+    cmd = "ishell -c 'cd {:} ; put -f {:}'".format(dst, src1, src2)
+    print cmd
     def spawn():
         return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     p = spawn()
@@ -431,7 +433,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # Then trigger the upload of the current event: move folder structure (=folder4 with file at $project) into folderiRod (iRod)
                 try: 
                     #wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
-                    wait_for_upload = irods_upload( tgzfile, folderiRod, 5, 6.)
+                    wait_for_upload = irods_upload( tgzfile,jfile, folderiRod, 5, 6.)
 
                 except:
                     print "Uploading failed "
