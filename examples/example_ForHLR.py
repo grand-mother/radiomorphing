@@ -60,7 +60,8 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
     def wait_for_upload():
         _, err = p.communicate()
         if not err:
-            os.remove(src)
+            os.remove(src1)
+            os.remove(src2)
             #return
         elif maxtrials <= 1:
             raise RuntimeError(err)
@@ -72,7 +73,8 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
             if err:
                 raise RuntimeError(err)
             if not err:
-                os.remove(src)
+                os.remove(src1)
+                os.remove(src2)
 
         irods_retry(upload, maxtrials - 1, wait)
 
