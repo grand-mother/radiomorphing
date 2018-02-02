@@ -357,14 +357,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #### file upload
                 #If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
                 #If one of the commands fails, then all other commands following it won't be executed.
-                cmd1='ishell -c "put %s %s/"; rm %s' %(tgzfile,folder, tgzfile)
+                cmd1='ishell -c "put %s %s/"' %(tgzfile,folder)
                 try:
                     p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
                     #os.remove(tgzfile)
                 except OSError:
                     print cmd1 , " failed"
                     #continue
-                cmd2='ishell -c "put %s %s/"; rm %s' %(jfile, folder, jfile) 
+                cmd2='ishell -c "put %s %s/"' %(jfile, folder) 
                 try:
                     p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
                     #os.remove(jfile)
