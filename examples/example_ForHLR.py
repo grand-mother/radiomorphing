@@ -345,9 +345,9 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 
                 if j>1:
-                    cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
-                else: 
                     cmd='ishell -c "cd grand/sim; cd %s ; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
+                else: 
+                    cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
                 try:
                     p0=subprocess.Popen(shlex.split(cmd))#,  stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
                     
