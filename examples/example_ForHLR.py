@@ -342,10 +342,10 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 folder2="E{:1.0e}".format(int(energy))
                 folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 folder4="A"+str(int(event["tau_at_decay"][5][1]))
-                folder=join("grand/sim",run, folder1, folder2, folder3, folder4 ) 
+                folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
 
                 
-                cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
+                cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
                 try:
                     p0=subprocess.Popen(shlex.split(cmd))#,  stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
                     
