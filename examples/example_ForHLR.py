@@ -320,7 +320,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     #shutil.copy(cvjson_file,newname)
                     try:
                         shutil.move(cvjson_file, structure)
-                    except shutil.Error: 
+                    except IOError, shutil.Error: 
                         pass
                             
                     if PRINT_OUT:
