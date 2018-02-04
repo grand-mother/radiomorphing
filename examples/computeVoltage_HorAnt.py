@@ -457,6 +457,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
             path2 = join(path2, filename)
         else:
             path2= join(path_out, filename)
+        #print "json file: ", path2
         log_event = EventLogger(path=path2)
 
     voltage=[]
@@ -518,7 +519,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
     for l in range(start,end):
         efieldtxt=path+'/a'+str(l)+'.trace'
     #    print 'Wave direction: zenith = ', zenith_sim, ' deg, azimuth = ', azimuth_sim, 'deg. (GRAND conventions), mountain slope: ', alpha_sim, 'deg.'
-    #    print 'Efield file: ', efieldtxt
+        #print 'Efield file: ', efieldtxt
 
         # Model the input signal.
         try:
@@ -591,7 +592,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
         #pl.savetxt(path+'out_'+str(l)+'.txt', (timeEW, voltage_EW, voltage_NS), newline='\r\n')#, voltage_NS)) # is not working correctly
         if np.size(timeEW)>0:   # Dat was computed
           f = file(path_out+'/out_'+str(l)+'.txt',"w")
-          #print "OUTFILE : ", path+'/out_'+str(l)+'.txt'
+          #print "OUTFILE : ", path_out+'/out_'+str(l)+'.txt'
           for i in np.arange(len(timeEW)):
             print >>f,"%1.5e	%1.2e	%1.2e	%1.2e" % (timeNS[i], voltage_NS[i], voltage_EW[i], voltage_vert[i] ) # same number of digits as input
           f.close()
@@ -703,7 +704,7 @@ if __name__ == '__main__':
 
     # which efield trace do you wanna read in. to be consistent the script works with the antenna ID
     path=sys.argv[3] #folder containing the traces and where the output should go to
-    path_out=sys.argv[3] #[4] # hand over path to outputfolder as 4th argument if you like
+    path_out=sys.argv[4] # hand over path to outputfolder as 4th argument if you like
 
     if opt_input=='txt':
         # Read the ZHAireS input (.inp) file to extract the primary type, the energy, the injection height and the direction
@@ -713,7 +714,7 @@ if __name__ == '__main__':
 
     elif opt_input=='json':
         # Read the json file to extract the primary type, the energy, the injection height, and the direction
-        json_file = str(sys.argv[4])
+        json_file = str(sys.argv[5])
         zenith_sim,azimuth_sim,energy,injection_height,primary = inputfromjson(path,json_file)
 
     elif opt_input=='manual':
