@@ -34,8 +34,41 @@ def _getXmax(primarytype, energy, zen2):
         a=62.5 # g/cm2
         c=357.5 #g/cm2
         
+# CR   
+    if primarytype=='proton' or primarytype=='Proton' or  primarytype=='iron' or primarytype=='Iron':
+        #Re= 6370949 # m, Earth radius
+        #injh=100000 # m for CR
+        #GdAlt=1500 # actual height of our array aboe sealevel
+        ## corection for zenith, baing a the point of impact
+        #ab = np.sqrt((Re + injh)**2. - (Re+GdAlt)**2*np.sin(np.pi-np.deg2rad(zen2))**2) -(Re+GdAlt)*np.cos(np.pi-np.deg2rad(zen2)) 
+        ##zen_inj = np.pi-np.arccos((ab**2+(Re+injh)**2-Re**2)/(2*ab*(Re+injh)))
+        #zen2 = np.pi-np.arccos((ab**2+(Re+injh)**2-Re**2)/(2*ab*(Re+injh)))
+        
+        if primarytype=='proton' or primarytype=='Proton': # pion, kaon .... aprroximated by proton
+            a=62.5 # g/cm2
+            c=357.5 #g/cm2    
+        if primarytype=='iron' or primarytype=='Iron': # aprroximated by proton
+            a=60 # g/cm2 # just approximated 
+            c=177.5 #g/cm2
+    
+    try:
+        Xmax= a*np.log10(energy*10**6.)+c # E/EeV* 10**6. to be in TeV
+    except RuntimeWarning: 
+        Xmax= a*np.log10(energy*10**6.)+c
+        print a, np.log10(energy*10**6.), c
+
+    return Xmax#/abs(np.cos(np.pi-zen2)) # TODO: how to correct for slanted shower
+
+def _dist_decay_Xmax(zen2, injh2, Xmax_primary, primarytype=None): #zen2: zenith of target shower
+    #% Using isothermal Model
+    rho_0 = 1.225*0.001#; % kg/m3 to 0.001g/cm3: 1g/cm3=1000kg/m3, since X given in g/cm2
+    M = 0.028966#;  %kg/mol - 1000g/mol
+    g = 9.81#; %ms-2
+    T = 288.#; % K
+    R = 8.32#; J/K/mol , J=kg m2/s2
+    
 # fix for CR   
-    if primarytype=='proton' or  primarytype=='iron' or primarytype=='Iron':
+    if primarytype=='proton' or primarytype=='Proton' or  primarytype=='iron' or primarytype=='Iron':    
         Re= 6370949 # m, Earth radius
         injh=100000 # m for CR
         GdAlt=1500 # actual height of our array aboe sealevel
@@ -43,27 +76,6 @@ def _getXmax(primarytype, energy, zen2):
         ab = np.sqrt((Re + injh)**2. - (Re+GdAlt)**2*np.sin(np.pi-np.deg2rad(zen2))**2) -(Re+GdAlt)*np.cos(np.pi-np.deg2rad(zen2)) 
         #zen_inj = np.pi-np.arccos((ab**2+(Re+injh)**2-Re**2)/(2*ab*(Re+injh)))
         zen2 = np.pi-np.arccos((ab**2+(Re+injh)**2-Re**2)/(2*ab*(Re+injh)))
-        
-        if primarytype=='proton': # pion, kaon .... aprroximated by proton
-            a=62.5 # g/cm2
-            c=357.5 #g/cm2    
-        if primarytype=='iron' or primarytype=='Iron': # aprroximated by proton
-            a=60 # g/cm2 # just approximated 
-            c=177.5 #g/cm2
-    
-    Xmax= a*np.log10(energy*10**6.)+c # E/EeV* 10**6. to be in TeV
-    #print primarytype, energy, zen2
-    #print "Xmax ", Xmax
-
-    return Xmax#/abs(np.cos(np.pi-zen2)) # TODO: how to correct for slanted shower
-
-def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
-    #% Using isothermal Model
-    rho_0 = 1.225*0.001#; % kg/m3 to 0.001g/cm3: 1g/cm3=1000kg/m3, since X given in g/cm2
-    M = 0.028966#;  %kg/mol - 1000g/mol
-    g = 9.81#; %ms-2
-    T = 288.#; % K
-    R = 8.32#; J/K/mol , J=kg m2/s2
 
     hD=injh2
     step=10 #m
@@ -88,3 +100,7 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
     #print "decay to Xmax: ", ai, " Xmaxheight ", h
     
     return h, ai # Xmax_height in m, Xmax_distance in m
+
+
+
+#print _getXmax('electron', 0.05, 89.0)

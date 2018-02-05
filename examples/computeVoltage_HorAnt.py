@@ -510,7 +510,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
         szen = np.sin(np.deg2rad(zenith_sim))
 
         Xmax_primary = modules._getXmax(primary, energy, np.deg2rad(zenith_sim)) # approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
-        Xmax_height, Xmax_distance = modules._dist_decay_Xmax(np.deg2rad(zenith_sim), injection_height, Xmax_primary) # d_prime: distance from decay point to Xmax
+        Xmax_height, Xmax_distance = modules._dist_decay_Xmax(np.deg2rad(zenith_sim), injection_height, Xmax_primary, primary) # d_prime: distance from decay point to Xmax
         Xmax = Xmax_distance*np.array([caz*szen, saz*szen, czen])+np.array([0,0,injection_height])
     #   print 'Xmax=',Xmax_primary,' Xmax height=',Xmax_height,' Xmax distance =',Xmax_distance,'Xmax position= ',Xmax
     #   print 'Now computing Xmax position from injection height=',injection_height,'m and (zen,azim) values.'
