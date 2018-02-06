@@ -292,7 +292,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 if not os.path.exists(structure): # later this is not necessary with $TMP
                     os.makedirs(structure)
                     
-'''                     
+                     
 
                 ##### Start radio morphing
 
@@ -453,7 +453,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 except:
                     print "Uploading failed "
-'''  
+  
  
 print "Job done"
 
