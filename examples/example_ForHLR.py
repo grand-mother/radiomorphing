@@ -266,16 +266,24 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
                 
-                #set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
-                # ATTENTION: not clear if nu_energy from momentum correct
-                latitude=event["tau_at_decay"][4][0]
-                longitude=event["tau_at_decay"][4][1]
-                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
+                token=str(event["tag"]).split("_")
+               
+                folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
+                folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
+                folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
+                folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
-                folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
-                folder2="E{:1.0e}".format(int(energy))
-                folder3="Z"+str(int(event["tau_at_decay"][5][0]))
-                folder4="A"+str(int(event["tau_at_decay"][5][1]))
+                ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
+                ## ATTENTION: not clear if nu_energy from momentum correct
+                #latitude=event["tau_at_decay"][4][0]
+                #longitude=event["tau_at_decay"][4][1]
+                #energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                
+                #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                #folder2="E{:1.0e}".format(int(energy))
+                #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 # following the naming of the tag
                 structure=join(run, folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
@@ -284,7 +292,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 if not os.path.exists(structure): # later this is not necessary with $TMP
                     os.makedirs(structure)
                     
-                      
+'''                     
 
                 ##### Start radio morphing
 
@@ -325,7 +333,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                             
                     if PRINT_OUT:
                         print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
-                
+            
                 
                 
                 import tarfile
@@ -445,7 +453,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 except:
                     print "Uploading failed "
- 
+'''  
  
 print "Job done"
 
