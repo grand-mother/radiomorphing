@@ -184,8 +184,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
         decay_altitude=event["tau_at_decay"][4][2] 
         print "decay decay_altitude: ", decay_altitude
         
-        v=event["tau_at_decay"][2]# shower direction, assuming decay products strongly forward beamed  
-
+        v=event["tau_at_decay"][3]# shower direction, assuming decay products strongly forward beamed  
+        print "shower direction v",v
         
         ###ANGLES theta, azimuth in deg (GRAND)
         theta = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
