@@ -73,7 +73,7 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary, primarytype=None): #zen2: zenith
         injh=100000 # m for CR
         GdAlt=1500 # actual height of our array aboe sealevel
         # corection for zenith, baing a the point of impact
-        ab = np.sqrt((Re + injh)**2. - (Re+GdAlt)**2*np.sin(np.pi-np.deg2rad(zen2))**2) -(Re+GdAlt)*np.cos(np.pi-np.deg2rad(zen2)) 
+        ab = np.sqrt((Re + injh)**2. - (Re+GdAlt)**2*np.sin(np.pi-(zen2))**2) -(Re+GdAlt)*np.cos(np.pi-(zen2)) 
         #zen_inj = np.pi-np.arccos((ab**2+(Re+injh)**2-Re**2)/(2*ab*(Re+injh)))
         zen2 = np.pi-np.arccos((ab**2+(Re+injh)**2-Re**2)/(2*ab*(Re+injh)))
 
