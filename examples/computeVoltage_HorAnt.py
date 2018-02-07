@@ -661,7 +661,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
                 voltage_com=np.copy(voltage_EW)
                 for i in range (0, len(voltage_EW)):
                                     voltage_com[i]+=voltage_NS[i]
-                v_list =( str(l),  max(voltage_NS) - min(voltage_NS), max(voltage_EW) - min(voltage_EW), max(voltage_vert) - min(voltage_vert), max(voltage_com) - min(voltage_com)   )
+                v_list =( l,  max(voltage_NS) - min(voltage_NS), max(voltage_EW) - min(voltage_EW), max(voltage_vert) - min(voltage_vert), max(voltage_com) - min(voltage_com)   )
                 voltage.append( v_list )
 
                 # time of peaks and value: t_EW_max, v_EW_max, t_EW_min, v_EW_min,.... EW, NS, vert, EW+NS
@@ -678,7 +678,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
                 com_ind_max, value = max(enumerate(voltage_com), key=operator.itemgetter(1))
                 com_ind_min, value = min(enumerate(voltage_com), key=operator.itemgetter(1))
 
-                time_peaks.append( (round(timeNS[NS_ind_max],11),  voltage_NS[NS_ind_max], round(timeNS[NS_ind_min],11), voltage_NS[NS_ind_min],
+                time_peaks.append(l, (round(timeNS[NS_ind_max],11),  voltage_NS[NS_ind_max], round(timeNS[NS_ind_min],11), voltage_NS[NS_ind_min],
                                     round(timeEW[EW_ind_max],11), voltage_EW[EW_ind_max], round(timeEW[EW_ind_min],11), voltage_EW[EW_ind_min],
                                     round(timevert[vert_ind_max],11), voltage_vert[vert_ind_max], round(timevert[vert_ind_min],11), voltage_vert[vert_ind_min],
                                     round(timeNS[com_ind_max],11), voltage_com[com_ind_max], round(timeNS[com_ind_min],11), voltage_com[com_ind_min] )  )
