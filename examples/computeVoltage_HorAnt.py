@@ -194,10 +194,20 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
     f=np.zeros(nfreq)
     RA=np.zeros(nfreq)
     XA=np.zeros(nfreq)
-    ltr=np.zeros(nfreq)
-    lta=np.zeros(nfreq)
-    lpr=np.zeros(nfreq)
-    lpa=np.zeros(nfreq)
+    #ltr=np.zeros(nfreq)
+    #lta=np.zeros(nfreq)
+    #lpr=np.zeros(nfreq)
+    #lpa=np.zeros(nfreq)
+       
+    ltr1=np.zeros(nfreq)
+    lta1=np.zeros(nfreq)
+    lpr1=np.zeros(nfreq)
+    lpa1=np.zeros(nfreq)
+    ltr2=np.zeros(nfreq)
+    lta2=np.zeros(nfreq)
+    lpr2=np.zeros(nfreq)
+    lpa2=np.zeros(nfreq)
+    
     if azstep==5:
         roundazimuth=round(azim/10)*10+round((azim-10*round(azim/10))/5)*5
     elif azstep==1:
@@ -212,15 +222,37 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
     if roundazimuth>=271 and roundazimuth<=360:
         roundazimuth=360-roundazimuth
 
-    for i in range(nfreq):
+
+    for i in range(nfreq):   # Using interpolation for every angle
         f[i]=freq[i,0]*freqscale
-        indtheta=np.nonzero(theta[i,:]==round(zen))[0]
+        indtheta=np.nonzero(theta[i,:]==int(zen))[0]
         indphi=np.nonzero(phi[i,:]==roundazimuth)[0]
         indcom=np.intersect1d(indtheta,indphi)
-        ltr[i]=lefftheta[i,indcom]
-       	lta[i]=np.deg2rad(phasetheta[i,indcom]) #*np.pi/180
-       	lpr[i]=leffphi[i,indcom]
-       	lpa[i]=np.deg2rad(phasephi[i,indcom]) #*np.pi/180
+        ltr1[i]=lefftheta[i,indcom]
+        lta1[i]=np.deg2rad(phasetheta[i,indcom]) #*np.pi/180
+        lpr1[i]=leffphi[i,indcom]
+        lpa1[i]=np.deg2rad(phasephi[i,indcom]) #*np.pi/180
+        indtheta=np.nonzero(theta[i,:]==int(zen)+1)[0]
+        indphi=np.nonzero(phi[i,:]==roundazimuth)[0]
+        indcom=np.intersect1d(indtheta,indphi)
+        ltr2[i]=lefftheta[i,indcom]
+        lta2[i]=np.deg2rad(phasetheta[i,indcom]) #*np.pi/180
+        lpr2[i]=leffphi[i,indcom]
+        lpa2[i]=np.deg2rad(phasephi[i,indcom]) #*np.pi/180
+
+	ltr=interp1d([int(zen),int(zen)+1],np.transpose([ltr1,ltr2]))(zen)
+	lta=interp1d([int(zen),int(zen)+1],np.transpose([lta1,lta2]))(zen)
+	lpr=interp1d([int(zen),int(zen)+1],np.transpose([lpr1,lpr2]))(zen)
+        lpa=interp1d([int(zen),int(zen)+1],np.transpose([lpa1,lpa2]))(zen)
+    #for i in range(nfreq):
+        #f[i]=freq[i,0]*freqscale
+        #indtheta=np.nonzero(theta[i,:]==round(zen))[0]
+        #indphi=np.nonzero(phi[i,:]==roundazimuth)[0]
+        #indcom=np.intersect1d(indtheta,indphi)
+        #ltr[i]=lefftheta[i,indcom]
+       	#lta[i]=np.deg2rad(phasetheta[i,indcom]) #*np.pi/180
+       	#lpr[i]=leffphi[i,indcom]
+       	#lpa[i]=np.deg2rad(phasephi[i,indcom]) #*np.pi/180
         if loaded==0:
             RA[i]=realimp[i,0]
             XA[i]=reactance[i,0]
