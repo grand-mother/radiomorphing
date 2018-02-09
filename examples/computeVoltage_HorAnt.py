@@ -510,11 +510,11 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
             end=len(positions)
         #    print "Array with ", end, " antennas handed over"
     elif opt_input=='json':
-        if len(sys.argv)>=6: # just one specif antenna handed over
+        if len(sys.argv)>6: # just one specif antenna handed over
             start=int(sys.argv[5]) # antenna ID
             end=start+1
         #    print "single antenna with ID: ", str(start)," handed over"
-        if  len(sys.argv)<6: # grep all antennas from the antenna file
+        if  len(sys.argv)<=6: # grep all antennas from the antenna file
             #positions=np.array(event["antennas"],dtype=float)
             #decay_pos=event["tau_at_decay"][1]
             #positions = positions - [decay_pos[0],decay_pos[1],0.]
