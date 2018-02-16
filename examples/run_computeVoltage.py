@@ -87,7 +87,7 @@ def irods_download(src1, dst, maxtrials, wait):
     """Manager for downloading a file via iRODS
     """
     print "downloading ", src1 , " to ", dst
-    cmd = "ishell -c 'get {:} {:}'".format(src1,dst)
+    cmd = "ishell -c 'get -f {:} {:}'".format(src1,dst)
     #print cmd
     def spawn():
         return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
@@ -349,7 +349,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #### download just tgz-folder from irods to outdir 
                 folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
                 
-                src1=folderiRod+str(event["tag"])+".tgz" # 
+                src1=folderiRod+"/"+str(event["tag"])+".tgz" # 
                 try: 
                     wait_for_download = irods_download(src1,out_dir, 5, 6.)
                     wait_for_download()
