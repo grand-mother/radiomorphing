@@ -352,6 +352,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 src1=folderiRod+str(event["tag"])+".tgz" # 
                 try: 
                     wait_for_download = irods_download(src1,out_dir, 5, 6.)
+                    wait_for_download()
                     
                     # unzip tgz folder eventtag and rm out-files
                     extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
