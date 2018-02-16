@@ -357,10 +357,10 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
       
                     # remove the old out-files
-                    test = os.listdir( join(out_dir, str(event["tag"])) )
-                    for item in test:
-                        if item.endswith(".txt"): 
-                            os.remove( os.path.join( directory, item ) )
+                    #test = os.listdir( join(out_dir, str(event["tag"])) )
+                    #for item in test:
+                        #if item.endswith(".txt"): 
+                            #os.remove( os.path.join( directory, item ) )
                 except:
                     print "Downloading failed "
                 
