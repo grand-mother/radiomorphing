@@ -470,7 +470,7 @@ def inputfromtxt(input_file_path):
 #===========================================================================================================
 def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy, injection_height, primary, hack,json_file=None):
 #===========================================================================================================
-
+    print "Voltage computation started"
     
     if opt_input=='json':
         # shower you are interested in
