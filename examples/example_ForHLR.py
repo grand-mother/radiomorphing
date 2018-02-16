@@ -431,7 +431,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
-                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1", folder1, folder2, folder3, folder4)
+                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_new", folder1, folder2, folder3, folder4)
                 except:
                     print "failed creating ", folderiRod
 
