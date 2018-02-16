@@ -333,6 +333,10 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
                 #old folder naming
+                latitude=event["tau_at_decay"][4][0]
+                longitude=event["tau_at_decay"][4][1]
+                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                
                 folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
                 folder2="E{:1.0e}".format(int(energy))
                 folder3="Z"+str(int(event["tau_at_decay"][5][0]))
@@ -343,12 +347,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 #### download just tgz-folder from irods to outdir 
                 folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
-                irods_download(src1, dst, maxtrials, wait)
                 
-                
-                scr1=folderiRod+str(event["tag"])+".tgz" # 
+                src1=folderiRod+str(event["tag"])+".tgz" # 
                 try: 
                     wait_for_download = irods_download(src1,out_dir, 5, 6.)
+                    
+                    # unzip tgz folder eventtag and rm out-files
                     extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
       
                     # remove the old out-files
@@ -359,9 +363,10 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 except:
                     print "Downloading failed "
                 
-                # unzip tgz folder eventtag and rm out-files
+                
                 
                 # new folder naming
+                token=str(event["tag"]).split("_")
                 folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
                 folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
                 folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
@@ -406,7 +411,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     
                     #cv.compute(out_dir, alpha_sim, effective, json_file)
                     #### cv produces a new jsonfile named eventtag.voltage.json in tmp_dir for every event in json_file
-                    cv2.compute('json',out_dir,out_dir, effective,theta, azimuth, ep, height, primary,json_file, hack)
+                    cv2.compute('json',out_dir,out_dir, effective,theta, azimuth, ep, height, primary, hack, json_file)
                     
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     

@@ -468,7 +468,7 @@ def inputfromtxt(input_file_path):
 
 
 #===========================================================================================================
-def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy, injection_height, primary,json_file=None, hack):
+def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy, injection_height, primary, hack,json_file=None):
 #===========================================================================================================
 
     
@@ -765,6 +765,6 @@ if __name__ == '__main__':
     #print 'shower = ',zenith_sim,azimuth_sim,energy
     #print "VOLTAGE COMPUTATION STARTED"
 
-    compute(opt_input,path, path_out, effective, zenith_sim, azimuth_sim, energy, injection_height, primary,json_file, hack)
+    compute(opt_input,path, path_out, effective, zenith_sim, azimuth_sim, energy, injection_height, primary, hack, json_file)
 
     #print "VOLTAGE COMPUTED"
