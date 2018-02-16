@@ -65,7 +65,7 @@ for i in range(0, len(json_file )):
         file.write('cd $TMP\n')
         message='echo "Job $MOAB_JOBID runnung in $PWD, started: '  +str(path_script)+'/run_computeVoltage.py '+str(path_json)+'/'+str(json_file[i])+'"\n'
         file.write(message)
-        script='python '+str(path_script)+'/run_computeVoltage.py '+str(path_json)+'/'+str(json_file[i]) + ' $TMP '+run + ' '+hack
+        script='python '+str(path_script)+'/run_computeVoltage.py '+str(path_json)+'/'+str(json_file[i]) + ' $TMP '+run + ' '+str(hack)
         file.write(script)
         file.close()
         
