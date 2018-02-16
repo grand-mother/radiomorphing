@@ -35,14 +35,14 @@ json_file = [f for f in os.listdir(path_json) if f.endswith('.json')]
 #print json_file
 
 ## craeting a bash file containing all the submission commands
-nname='run_RM.sh'
+nname='run_CV.sh'
 nfile= open(nname, 'w')
 nfile.write('#!/bin/bash\n')
 
 # producing bash files to run on multiple cores
 for i in range(0, len(json_file )):
 
-        fname=run+'_job'+str(i)+'.sh' # filename of each job
+        fname=run+'_cv_job'+str(i)+'.sh' # filename of each job
         
         command='msub '+str(fname)+'\n'
         nfile.write(command)
