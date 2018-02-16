@@ -550,6 +550,8 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
     ###### loop  over l --- LOOP OVER ANTENNA ARRAY
     for l in range(start,end):
         efieldtxt=path+'/a'+str(l)+'.trace'
+        if l==0:
+            print 'Efield file: ', efieldtxt
     #    print 'Wave direction: zenith = ', zenith_sim, ' deg, azimuth = ', azimuth_sim, 'deg. (GRAND conventions), mountain slope: ', alpha_sim, 'deg.'
         #print 'Efield file: ', efieldtxt
 
