@@ -86,13 +86,14 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
 def irods_download(src1, dst, maxtrials, wait):
     """Manager for downloading a file via iRODS
     """
-    cmd = "ishell -c 'get {:}'".format(src1)
+    print "downloading ", src1 , " to ", dst
+    cmd = "ishell -c 'get {:} {:}'".format(src1,dst)
     #print cmd
     def spawn():
         return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     p = spawn()
 
-    def wait_for_upload():
+    def wait_for_download():
         _, err = p.communicate()
         if not err:
             #os.remove(src1)
@@ -113,13 +114,14 @@ def irods_download(src1, dst, maxtrials, wait):
 
         irods_retry(upload, maxtrials - 1, wait)
 
-    return wait_for_upload
+    return wait_for_download
 
 def extract_file(path, to_directory='.'):
     #if path.endswith('.zip'):
         #opener, mode = zipfile.ZipFile, 'r'
     if path.endswith('.tar.gz') or path.endswith('.tgz'):
         opener, mode = tarfile.open, 'r:gz'
+        print "Unpack ", path
     elif path.endswith('.tar.bz2') or path.endswith('.tbz'):
         opener, mode = tarfile.open, 'r:bz2'
     else: 
@@ -178,12 +180,11 @@ if not os.path.exists(tmp_dir): # later this is nit necessary with $TMP
 sim_dir=join(tmp_dir, "GrandEventADetailed2") # local copy of refernce shower at $TMP, plus folder which will contain the scaled traces 
 
 
-#t0=time.time()
-if not os.path.exists(sim_dir):
-    shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
-print "path to sim " , sim_dir
-#t1=time.time()
-#print " time needed for copy :", t1-t0
+
+#if not os.path.exists(sim_dir):
+    #shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
+#print "path to sim " , sim_dir
+
     
 particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta
 

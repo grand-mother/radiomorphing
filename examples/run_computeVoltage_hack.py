@@ -86,13 +86,14 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
 def irods_download(src1, dst, maxtrials, wait):
     """Manager for downloading a file via iRODS
     """
-    cmd = "ishell -c 'get {:}'".format(src1)
+    print "downloading ", src1 , " to ", dst
+    cmd = "ishell -c 'get {:} {:}'".format(src1,dst)
     #print cmd
     def spawn():
         return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     p = spawn()
 
-    def wait_for_upload():
+    def wait_for_download():
         _, err = p.communicate()
         if not err:
             #os.remove(src1)
@@ -113,7 +114,7 @@ def irods_download(src1, dst, maxtrials, wait):
 
         irods_retry(upload, maxtrials - 1, wait)
 
-    return wait_for_upload
+    return wait_for_download
 
 def extract_file(path, to_directory='.'):
     #if path.endswith('.zip'):
