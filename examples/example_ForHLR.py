@@ -426,12 +426,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
-                folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
+                folderiRod=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
                 
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
-                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_new", folder1, folder2, folder3, folder4)
+                    irods_retry(irods_makedirs, 5, 6., folderiRod)
                 except:
                     print "failed creating ", folderiRod
 
