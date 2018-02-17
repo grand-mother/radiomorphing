@@ -34,7 +34,7 @@ json_file = [f for f in os.listdir(path_json) if f.endswith('.json')]
 #print json_file
 
 ## craeting a bash file containing all the submission commands
-nname='run_RM.sh'
+nname='$PROJECT/run_RM.sh'
 nfile= open(nname, 'w')
 nfile.write('#!/bin/bash\n')
 
@@ -47,7 +47,7 @@ for i in range(0, len(json_file )):
         nfile.write(command)
         
         
-        file= open(fname, 'w')
+        file= open("$PROJECT/"+fname, 'w')
         file.write('#!/bin/bash\n')
         file.write('#\n')
         file.write('#---------------------\n')
@@ -56,7 +56,7 @@ for i in range(0, len(json_file )):
         file.write('#MSUB -q singlenode\n')
         file.write('#MSUB -l nodes=1:ppn=1\n')
         file.write('#MSUB -l walltime=72:00:00\n')
-        file.write('#MSUB -l pmem=1gb\n')
+        file.write('#MSUB -l pmem=5gb\n')
         file.write('#MSUB -m bea\n')
         file.write('#MSUB -M zilles@iap.fr\n')
         file.write('#--------------------- \n')       

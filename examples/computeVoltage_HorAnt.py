@@ -6,8 +6,8 @@ import math
 import numpy as np
 #import pylab as pl
 
-#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
-wkdir = './'
+wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
+#wkdir = './'
 
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
