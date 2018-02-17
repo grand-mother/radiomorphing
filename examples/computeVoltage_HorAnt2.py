@@ -615,8 +615,8 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
         Xant = [x_sim, y_sim, z_sim]
  	# Hack OMH 24/01
  	if hack==1:
-            alpha_sim=0
-            beta_sim=0
+            alpha_sim=0.
+            beta_sim=0.
         #Xant = [400000, 0 , 0]
         ush = Xmax-Xant
         ush = ush/np.linalg.norm(ush)  # Unitary vector pointing to Xmax from antenna pos

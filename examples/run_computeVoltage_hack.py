@@ -8,6 +8,7 @@ import time
 import subprocess
 import shlex
 from os import listdir
+import tarfile
 
 ##import computevoltage_ForHLR as cv
 import computeVoltage_HorAnt2 as cv2
@@ -327,27 +328,27 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
                 
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
-                #token=str(event["tag"]).split("_")
-                #folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
-                #folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
-                #folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
-                #folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
+                token=str(event["tag"]).split("_")
+                folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
+                folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
+                folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
+                folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
-                #old folder naming
-                latitude=event["tau_at_decay"][4][0]
-                longitude=event["tau_at_decay"][4][1]
-                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                ##old folder naming
+                #latitude=event["tau_at_decay"][4][0]
+                #longitude=event["tau_at_decay"][4][1]
+                #energy=event["tau_at_decay"][1] *1e9 # GeV to eV
                 
-                folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
-                folder2="E{:1.0e}".format(int(energy))
-                folder3="Z"+str(int(event["tau_at_decay"][5][0]))
-                folder4="A"+str(int(event["tau_at_decay"][5][1]))
+                #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                #folder2="E{:1.0e}".format(int(energy))
+                #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 
                 
                 
                 
                 #### download just tgz-folder from irods to outdir 
-                folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
+                folderiRod=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
                 
                 src1=folderiRod+str(event["tag"])+".tgz" # 
                 try: 
@@ -429,7 +430,6 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
             
                 
                 
-                import tarfile
                 tar_name= join(tmp_dir, "InterpolatedSignals", str(event["tag"])+".tgz")
                 tar = tarfile.open(tar_name, "w:gz")
                 tar.add(out_dir, arcname=str(event["tag"]))
@@ -519,12 +519,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
-                folderiRod=join("grand/sim",run,"output_fh1_run2", folder1, folder2, folder3,  folder4) 
+                folderiRod=join("grand/sim",run,"output_fh1_new_hack", folder1, folder2, folder3,  folder4) 
                 
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
-                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_run2_hack", folder1, folder2, folder3, folder4)
+                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_new_hack", folder1, folder2, folder3, folder4)
                 except:
                     print "failed creating ", folderiRod
 
