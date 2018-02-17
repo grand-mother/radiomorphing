@@ -18,10 +18,13 @@ import computeVoltage_HorAnt as cv
 def irods_makedirs(root, *args):
     """Make collections recursivelly on iRODS
     """
+    
     cmd = ["cd " + root]
+    #print "cmd", str(cmd)
     for path in args:
         cmd += ["mkdir " + path, "cd " + path]
     cmd = "ishell -c '{:}'".format(" ; ".join(cmd))
+    #print str(cmd)
     #print cmd
 
     
@@ -51,6 +54,7 @@ def irods_retry(action, maxtrials, wait, *args):
 def irods_upload(src1, src2, dst, maxtrials, wait):
     """Manager for uploading a file via iRODS
     """
+    #print dst
     cmd = "ishell -c 'cd {:} ; put -f {:} ; put -f {:}'".format(dst, src1, src2)
     #print cmd
     def spawn():
@@ -427,13 +431,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
                 folderiRod=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
+                #print folderiRod
                 
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
-                    irods_retry(irods_makedirs, 5, 6., folderiRod)
+                    irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4)
                 except:
-                    print "failed creating ", folderiRod
+                    print "failed creating ", str(folderiRod)
 
                 # Wait for the upload of the previous event before uploading a new one. Note that if
                 # it fails a RunetimeError is raised.
