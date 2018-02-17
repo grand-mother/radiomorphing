@@ -439,6 +439,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # it fails a RunetimeError is raised.
                 try:
                     wait_for_upload()
+                    print "files uploaded to ", str(folderiRod)
                     os.remove(file1)
                     os.remove(file2)
                 except:
