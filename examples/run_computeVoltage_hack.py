@@ -348,9 +348,9 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 
                 #### download just tgz-folder from irods to outdir 
-                folderiRod=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
+                folderiRod_dl=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
                 
-                src1=folderiRod+str(event["tag"])+".tgz" # 
+                src1=join(folderiRod_dl,str(event["tag"])+".tgz") # 
                 try: 
                     wait_for_download = irods_download(src1,out_dir, 5, 6.)
                     

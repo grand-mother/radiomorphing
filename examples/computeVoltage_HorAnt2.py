@@ -613,7 +613,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
                     sys.exit()
 
         Xant = [x_sim, y_sim, z_sim]
- 	# Hack OMH 24/01
+ 	# Hack OMH 24/01 -> used Anne 18Feb
  	if hack==1:
             alpha_sim=0.
             beta_sim=0.
