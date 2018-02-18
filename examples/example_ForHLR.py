@@ -25,7 +25,7 @@ def irods_makedirs(root, *args):
         cmd += ["mkdir " + path, "cd " + path]
     cmd = "ishell -c '{:}'".format(" ; ".join(cmd))
     #print str(cmd)
-    #print cmd
+    print " make folder ", cmd
 
     
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,  stderr=subprocess.PIPE, close_fds=True)
@@ -54,7 +54,7 @@ def irods_retry(action, maxtrials, wait, *args):
 def irods_upload(src1, src2, dst, maxtrials, wait):
     """Manager for uploading a file via iRODS
     """
-    #print dst
+    print "download to ",  dst
     cmd = "ishell -c 'cd {:} ; put -f {:} ; put -f {:}'".format(dst, src1, src2)
     #print cmd
     def spawn():
@@ -415,51 +415,53 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                         #print p1.communicate()
                     #except NameError:
                         #print "process not available"
+ 
+                UPLOAD=0
+                if UPLOAD==1:
+                    tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                    print "tgzfile ", tgzfile
+                    jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                    print "jfile ", jfile
                 
-                tgzfile=structure+"/"+str(event["tag"])+".tgz"
-                print "tgzfile ", tgzfile
-                jfile=structure+"/"+str(event["tag"])+".voltage.json"
-                print "jfile ", jfile
-            
-                
-                # set up folder system in irods 
-                #folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
-                #cmd_='ishell -c "mkdir %s"' %(folder)
-                #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
-                #folder2="E{:1.0e}".format(int(energy))
-                #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
-                #folder4="A"+str(int(event["tau_at_decay"][5][1]))
-                #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
-                folderiRod=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
-                #print folderiRod
-                
-                # creating directories. This is blocking until it succeeds.
-                # It will retry at most 5 times and will wait 6s between trials.
-                try:
-                    irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4)
-                except:
-                    print "failed creating ", str(folderiRod)
+                    
+                    # set up folder system in irods 
+                    #folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
+                    #cmd_='ishell -c "mkdir %s"' %(folder)
+                    #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                    #folder2="E{:1.0e}".format(int(energy))
+                    #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                    #folder4="A"+str(int(event["tau_at_decay"][5][1]))
+                    #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
+                    folderiRod=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
+                    #print folderiRod
+                    
+                    # creating directories. This is blocking until it succeeds.
+                    # It will retry at most 5 times and will wait 6s between trials.
+                    try:
+                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4)
+                    except:
+                        print "failed creating ", str(folderiRod)
 
-                # Wait for the upload of the previous event before uploading a new one. Note that if
-                # it fails a RunetimeError is raised.
-                try:
-                    wait_for_upload()
-                    print "files uploaded to ", str(folderiRod)
-                    os.remove(file1)
-                    os.remove(file2)
-                except:
-                    print "Uploading failed in waiting phase"
+                    # Wait for the upload of the previous event before uploading a new one. Note that if
+                    # it fails a RunetimeError is raised.
+                    try:
+                        wait_for_upload()
+                        print "files uploaded to ", str(folderiRod)
+                        os.remove(file1)
+                        os.remove(file2)
+                    except:
+                        print "Uploading failed in waiting phase"
+        
+                    # Then trigger the upload of the current event: move folder structure (=folder4 with file at $project) into folderiRod (iRod)
+                    try: 
+                        #wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
+                        wait_for_upload = irods_upload( tgzfile,jfile, folderiRod, 5, 6.)
+                        file1=tgzfile
+                        file2=jfile
+
+                    except:
+                        print "Uploading failed "
     
-                # Then trigger the upload of the current event: move folder structure (=folder4 with file at $project) into folderiRod (iRod)
-                try: 
-                    #wait_for_upload = irods_upload( structure, folderiRod, 5, 6.)
-                    wait_for_upload = irods_upload( tgzfile,jfile, folderiRod, 5, 6.)
-                    file1=tgzfile
-                    file2=jfile
-
-                except:
-                    print "Uploading failed "
-  
  
 print "Job done"
 
