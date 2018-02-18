@@ -34,7 +34,7 @@ json_file = [f for f in os.listdir(path_json) if f.endswith('.json')]
 #print json_file
 
 ## craeting a bash file containing all the submission commands
-nname='$PROJECT/run_RM.sh'
+nname='/project/fh1-project-huepra/qc8087/run_RM.sh'
 nfile= open(nname, 'w')
 nfile.write('#!/bin/bash\n')
 
@@ -47,7 +47,7 @@ for i in range(0, len(json_file )):
         nfile.write(command)
         
         
-        file= open("$PROJECT/"+fname, 'w')
+        file= open("/project/fh1-project-huepra/qc8087/"+fname, 'w')
         file.write('#!/bin/bash\n')
         file.write('#\n')
         file.write('#---------------------\n')
