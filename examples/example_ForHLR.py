@@ -416,7 +416,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     #except NameError:
                         #print "process not available"
  
-                UPLOAD=0
+                UPLOAD=1
                 if UPLOAD==1:
                     tgzfile=structure+"/"+str(event["tag"])+".tgz"
                     print "tgzfile ", tgzfile
@@ -447,8 +447,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     try:
                         wait_for_upload()
                         print "files uploaded to ", str(folderiRod)
-                        os.remove(file1)
-                        os.remove(file2)
+                        #os.remove(file1)
+                        #os.remove(file2)
                     except:
                         print "Uploading failed in waiting phase"
         
