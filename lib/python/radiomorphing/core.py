@@ -20,6 +20,9 @@ from interpolation import interpolate_trace
 from frame import UVWGetter
 from scaling import scale
 from utils import getCerenkovAngle, load_trace
+import operator
+
+from utils import getn, get_integratedn, mag
 
 def _ProjectPointOnLine(a, b, p):
     ap = p-a
@@ -37,7 +40,7 @@ def _ProjectPointOnPlane(a,b,d, p):
     point= p+ t*n
     return point
 
-def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
+def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=None, scaled=True):
     """Interpolate all traces from the (rescaled) closest neighbours
 
     Args:
@@ -622,22 +625,102 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
             # add the Hilbert envelope later.... but just possible if all three components interpolated ### add thsi to name
             print name
 
-        FILE = open(name, "w+" )
+
+#### would save trace without timing correction
+        #FILE = open(name, "w+" )
+        #for i in range( 0, len(xnew_desiredx) ):
+
+            ##print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
+                #print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
+
+        #FILE.close()
+#################################        
+#### correct timing of radiomorphhing
+## get time of 0 transition between peak and peak, assimung taht this time coresponds to Xmax (sign fipe thr increase and decrease of shower)
+## correct this by decay point to Xmax position / c
+## plus xmax to antenna position / c/n (integrated n over path)
+## => correct zero transition for that resulting time: find bin where min and where max, find inbetween the zero crossing
+## get the diff between that time and the calculated and correct the complete timing for that difference: xnew_desiredx - diff
+
+# decay= (0,0, height)
+# Xmax_pos
+# positions[b]
+
+# since zero crossing takes place in the same timebin for all three components, get the bin from the component with the largest signal.
+
+###Ex
+        if (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
+            trace= tracedes_desiredx
+###Ey        
+        if (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)) and (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
+            trace= tracedes_desiredy 
+###Ez
+        if (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)):
+            trace= tracedes_desiredz
+ 
+
+        ind_min, value_ref0 = min(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
+        ind_max, value_ref1 = max(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
+        if ind_max>ind_min:
+            a=ind_min
+            c=ind_max
+        else:
+            a=ind_max
+            c=ind_min
+        zero_crossings = np.where(np.diff(np.signbit( trace[a:c]  )))[0] # old bin for crossing
+        
+        print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
+        
+        if len(zero_crossings)==1:
+            zero_cross= zero_crossings[0]
+        if len(zero_crossings)==2:
+            zero_cross= zero_crossings[0]
+        if len(zero_crossings)>2:
+            zero_cross=int(np.mean(zero_crossings))
+            
+        # has problems to find zero crossing if electric field strength is very low
+        if len(zero_crossings)==0:
+            #print value_ref0, value_ref1
+            zero_cross=int(abs(a-c)/2.)
+        #print "corrected ",a,c, zero_cross
+        #print "cross time ", xnew_desiredx[zero_cross]
+
+        #from utils import get_integratedn(zen2, height_Xmax, height_ant)
+        decay=np.array([0,0, injection_height])
+        
+        dist_decay_Xmax= mag(decay-Xmax_pos)
+        dist_Xmax_ant=mag(Xmax_pos-positions[b])
+        #print dist_decay_Xmax, dist_Xmax_ant
+        
+        # light velocity
+        c=299792458*1.e-9 #m/ns
+        #n=( getn(Xmax_pos[2])+ getn(positions[b,2]))/2.
+        
+        #n=get_integratedn(zen, Xmax_pos[2], positions[b,2])
+        n=get_integratedn(zen, injection_height, positions[b])
+        
+        newtime= dist_decay_Xmax/c + dist_Xmax_ant/c*n
+        #print "new time ", newtime, " = ", dist_decay_Xmax/c , " + ", dist_Xmax_ant/c*n
+        
+        time_diff= newtime-xnew_desiredx[zero_cross]
+        
+        xnew_desiredx= xnew_desiredx + time_diff* np.ones(len(xnew_desiredx))
+        
+        #print xnew_desiredx[zero_cross]
+
+                
+        FILE = open(path2+ '/a'+str(b)+'.trace', "w+" )
         for i in range( 0, len(xnew_desiredx) ):
 
             #print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
                 print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
 
-
-
-        ## in the last line of the file we wanna write the max. ampl of the hilbert envelope
-        ## something like: amp exm eym ezm
-        #print >>FILE, ""
-        ##print >>FILE,"%1.5f	%1.5e	%1.5e	%1.5e	%1.5f	%1.5e	%1.5e	%1.5e" % (amp, exm, eym, ezm, amp2,exm2, eym2, ezm2)
-        #print >>FILE,"%1.5f %1.5e %1.5e %1.5e" % (amp, exm, eym, ezm)
-
-
         FILE.close()
+        
+        
+        
+        
+#################################          
 
         if DISPLAY==1:
             #### PLOTTING
@@ -676,4 +759,4 @@ def process(sim_dir, shower, antennas, out_dir):
     scale(sim_dir, **shower)
 
     # interpolate the traces.
-    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"])
+    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"], shower["injection_height"])
