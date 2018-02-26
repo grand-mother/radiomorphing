@@ -26,7 +26,7 @@ shower = {
     "zenith" : 89.5,               # deg (GRAND frame)
     "azimuth" : 0.,                # deg (GRAND frame)
     "injection_height" : 2000.,    # m (injection height in the local coordinate system)
-    "altitude" : height }   # m (alitude with respect to sealevel)
+    "altitude" : 2000. }   # m (alitude with respect to sealevel, not necessarily eqivalent to injection height)
 
 # Perform the radiomorphing
 radiomorphing.process(sim_dir, shower, antennas, out_dir)
