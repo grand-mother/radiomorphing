@@ -377,7 +377,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # following the naming of the tag
-                structure=join(run+_"hack", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+"_hack", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
