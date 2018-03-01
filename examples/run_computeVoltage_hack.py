@@ -327,12 +327,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
                 
-                ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
-                token=str(event["tag"]).split("_")
-                folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
-                folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
-                folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
-                folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
+                ###set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
+                #token=str(event["tag"]).split("_")
+                #folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
+                #folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
+                #folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
+                #folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
                 ##old folder naming
                 #latitude=event["tau_at_decay"][4][0]
@@ -346,24 +346,24 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 
                 
+ ##### NOTE AZ 01March: download failed for some reason -- include RM again             
+                ##### download just tgz-folder from irods to outdir 
+                #folderiRod_dl=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
                 
-                #### download just tgz-folder from irods to outdir 
-                folderiRod_dl=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) 
-                
-                src1=join(folderiRod_dl,str(event["tag"])+".tgz") # 
-                try: 
-                    wait_for_download = irods_download(src1,out_dir, 5, 6.)
+                #src1=join(folderiRod_dl,str(event["tag"])+".tgz") # 
+                #try: 
+                    #wait_for_download = irods_download(src1,out_dir, 5, 6.)
                     
-                    # unzip tgz folder eventtag and rm out-files
-                    extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
+                    ## unzip tgz folder eventtag and rm out-files
+                    #extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
       
-                    ## remove the old out-files
-                    #test = os.listdir( join(out_dir, str(event["tag"])) )
-                    #for item in test:
-                        #if item.endswith(".txt"): 
-                            #os.remove( os.path.join( directory, item ) )
-                except:
-                    print "Downloading failed "
+                    ### remove the old out-files
+                    ##test = os.listdir( join(out_dir, str(event["tag"])) )
+                    ##for item in test:
+                        ##if item.endswith(".txt"): 
+                            ##os.remove( os.path.join( directory, item ) )
+                #except:
+                    #print "Downloading failed "
                 
                 
                 
@@ -377,7 +377,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # following the naming of the tag
-                structure=join(run, folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+_"hack", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -386,18 +386,18 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
 
 
-                ###### Start radio morphing
+                ##### Start radio morphing
 
-                #shower = {
-                        #"primary" : primary,       # reference shower "electron" at the moment
-                        #"energy" : ep,               # EeV
-                        #"zenith" : theta,               # deg (GRAND frame)
-                        #"azimuth" : azimuth,                # deg (GRAND frame)
-                        #"injection_height" : height,    # m
-                        #"altitude" : decay_altitude}   # m
+                shower = {
+                        "primary" : primary,       # reference shower "electron" at the moment
+                        "energy" : ep,               # EeV
+                        "zenith" : theta,               # deg (GRAND frame)
+                        "azimuth" : azimuth,                # deg (GRAND frame)
+                        "injection_height" : height,    # m
+                        "altitude" : decay_altitude}   # m
 
-                ## Perform RADIO MORPHING
-                #radiomorphing.process(sim_dir, shower, antennas, out_dir)
+                # Perform RADIO MORPHING
+                radiomorphing.process(sim_dir, shower, antennas, out_dir)
                 
                 
 
@@ -532,8 +532,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 # it fails a RunetimeError is raised.
                 try:
                     wait_for_upload()
-                    os.remove(file1)
-                    os.remove(file2)
+                    #os.remove(file1) ## AZ: excluded to be save
+                    #os.remove(file2)
                 except:
                     print "Uploading failed in waiting phase"
     
