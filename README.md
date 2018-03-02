@@ -4,20 +4,22 @@ Welcome to Radio Morphing!
 These people made that tool amazing:
 W. Carvalho, K. de Vries, O. Martineau, C. Medina, V. Niess, M. Tueros, A. Zilles
 
-Details of the methods can be found in <RM_PUBLICATION>
+Details of the methods can be found in <RM_PUBLICATION> comming soon
 
-===== This version is the very first draft and more like a list of notes ====
+
+===== This version is a draft ====
 
 ===== beta users should already find all needed informations to run RM ====
 
 
+
 ## Description/Introduction
 
-Preliminary example of a radiomorphing Python package.
+This is a preliminary version of the radio morphing Python package.
 
 This python package allows you to calculates the radio signal of an air shower with desired shower parameters which will be detected by an radio array within a fraction of the time common air-simulation tools will need.
 
-The parametrisation was developed for 
+The parametrisation was developed for the GRAND sensitivity study, to detect the hot-spots on the world where the trigger-rate for horizontal neutrino-induced air showers is enhanced.
 
 
 ## Installation
@@ -41,47 +43,63 @@ The example reference shower is an air shower induced by an electron of an energ
 
 See the [example.py](examples/example.py) script for an example of usage.
 
-The basis of the calclulation is an simulated reference shower. At the moment just results of ZHAireS simulations can be read in. A usage of CoREAS output will be integrated asap.
+The basis of the calclulation is an simulated reference shower. At the moment just results of ZHAireS simulations can be read in. A direct usage of CoREAS output will be integrated asap.
 
 The internal coordinate system used in radiomorphing is defined the injection point of the shower which is given by (0,0,height). The altitude wrt the sealevel of the injection has to be handed over as well for the scaling part of the method. 
 In comparison to ZHAireS or CoREAS simulations, Radio Morphing expects the direction of propagation in  [GRAND conventions](https://github.com/grand-mother/simulations/blob/master/GRANDAngularConventions.pdf) as input.
 
- -explain units for all parameters and outputs
- -explain scaling (shortly)
- -explain interpolation (shortly) -> doesn't work for very low/high frequencies, define the valid band (upsampling +downsampling done within the script) 
  
- - Magnetic field values are hardcoded for the GRAND example location (Ulastai) in [scaling.py](https://github.com/grand-mother/radiomorphing/blob/afc77779bb0acc09e3458e9e5f0c0e68b77456f9/lib/python/radiomorphing/scaling.py#L287-L291). If needed that values have to be adapted.
+One important aspect is that the magnetic field configuration are hardcoded for the GRAND example location (Ulastai) in [scaling.py](https://github.com/grand-mother/radiomorphing/blob/afc77779bb0acc09e3458e9e5f0c0e68b77456f9/lib/python/radiomorphing/scaling.py#L287-L291). If needed that values (as well as the reference shower) have to be adapted.
 
 
 ### Input overview
 to be handed over as in [example.py](https://github.com/grand-mother/radiomorphing/blob/master/examples/example.py)
 
 **set of shower parameters** 
--primary type (electron/pion), 
--energy of the particle inducing the shower in EeV, 
--zenith in deg (GRAND conv), 
--azimuth in deg (GRAND conv), 
--injection height in m== z component of the injection point in m, used to define the injectionposition as (0,0,injectionheight) as reference
--altitude == actual height in m of injection above sealevel which can differ from the injectionheight in ase of Earth's curvature and differing original coordinate system for the desired antenna positions
+- primary type (electron/pion), 
+- energy of the particle inducing the shower in EeV, 
+- propagation direction of shower: zenith in deg (GRAND conv) and azimuth in deg (GRAND conv), 
+- injection height in m == z component/height wrt sealvel of the injection point in m, used to define the injection position as (0,0,injectionheight) as reference
+- altitude == actual height in m of injection above sealevel which can differ from the injectionheight in ase of Earth's curvature and differing original coordinate system for the desired antenna positions
 
 **desired antenna positions**: list of desired antenna positions handed over in x (along North-South), y (along East-West), z (vertical, r.t. sealevel), since positions must be given in the reference frame defined by injection point, for example saved like  [antpos_desired.dat](https://github.com/grand-mother/radiomorphing/blob/master/examples/data/InterpolatedSignals/antpos_desired2.dat)
  
-**path reference shower**: the reference shower is simulated in a star shape pattern (see folder GrandEventADetailed2, -> ask me for the 16 planes)
+**path reference shower**: the reference shower is simulated in star-shape-patterned planes (see folder GrandEventADetailed2, -> ask me for the 16 planes)
 
 
 ### Output
-out_dir: folder for output
--a#.trace: electric field traces for EW,NS, and UP component, time in ns, electric field strength in muV/m (cross-check that), #=ID number of antenna, meaning index of antenna in teh antenna list
+- out_dir: folder in which output shall be stored
+- a#.trace: electric field traces for EW, NS, and UP component, time in ns, electric field strength in muV/m, #=ID number of antenna, following the index of antennas in the list-file of the desired antenna positions
 
-### Setting up own study/referenc shower
- -> here there should come the explanation how to set up an own reference shower
- ecah plane needs to be stored in its own subfolder (all traces and corresponding antenna positions in an axtra file)
+
+
+### Setting up own study/Producing your own reference shower
+
+To produce the reference shower, antenna position following a star-shape pattern in shower coordinates  (vxB, vxvxB) have to be calculated. Each star-shape pattern forms one plane and should be positioned in a fixed distance to the Xmax of the simulated shower. Several of these planes in different fixed distances to Xmac should be simulated. 
+Therefor, one can use [ZHAireS](https://arxiv.org/abs/1107.1189) or [CoREAS](https://arxiv.org/abs/1301.2132v1) as long as the following procedure is respected:
+
+- the resulting electric field traces for each plane should be stored in a single subfolder, while a `MasterIndex`-file shall summarise the information about the parameter set of the shower (in ZHAireS convention!) as well as the names of the subfolder and the distances to Xmax of the each plane. See [example](https://github.com/grand-mother/radiomorphing/blob/master/examples/data/GrandEventADetailed2/MasterIndex).
+
+- electric field traces have to be stored as:
+
+  `a#.trace`: time in ns, E(North-South) in muV/m, E(East-West) in muV/m, E(Vertical) in muV/m,
+  while `#`is the wild card for the antenna ID, starting with 0.
+  
+- simulated antenna positions have to be stored as:
+
+  `antpos.dat`: x (along North-South) in m, y (along East-West) in m, z (height wrt sealevel) in m
+  
+  Here, the antenna positions should be defined in the reference frame where the injection of the shower takes place at  
+  (0m,0m,injectionheight in m)
+ 
+ An example reference shower is given in [GRANDevent](https://github.com/grand-mother/radiomorphing/tree/master/examples/data/GrandEventADetailed2).
+
  
 
 
-## Future projects
- - 
- - include CoREAS simus as possible input 
+## Possible future projects
+ - hand over magnetic field configuration as parameter
+ - include CoREAS output directly as possible input 
  
 
 ## License
