@@ -2,14 +2,14 @@
 Welcome to Radio Morphing!
 
 These people made that tool amazing:
-W. Carvalho, K. de Vries, O. Martineau, C. Medina, V. Niess, M. Tueros, A. Zilles
+W. Carvalho, K. de Vries, O. Martineau, K. Kotera V. Niess, M. Tueros, A. Zilles
 
-Details of the methods can be found in <RM_PUBLICATION> comming soon
+Details of the methods can be found in <RM_PUBLICATION> coming soon
 
 
 ===== This version is a draft ====
 
-===== beta users should already find all needed informations to run RM ====
+===== beta users should already find all needed information to run RM ====
 
 
 
@@ -17,9 +17,9 @@ Details of the methods can be found in <RM_PUBLICATION> comming soon
 
 This is a preliminary version of the radio morphing Python package.
 
-This python package allows you to calculates the radio signal of an air shower with desired shower parameters which will be detected by an radio array within a fraction of the time common air-simulation tools will need.
+This Python package allows you to calculates the radio signal of an air shower with desired shower parameters which will be detected by an radio array within a fraction of the time common air-simulation tools will need.
 
-The parametrisation was developed for the GRAND sensitivity study, to detect the hot-spots on the world where the trigger-rate for horizontal neutrino-induced air showers is enhanced.
+This full parametrisation of the radio signal based on a simulated reference shower was developed for the GRAND sensitivity study, to detect the hot-spots on the world where the trigger-rate for horizontal neutrino-induced air showers is enhanced.
 
 
 ## Installation
@@ -106,3 +106,7 @@ Therefor, one can use [ZHAireS](https://arxiv.org/abs/1107.1189) or [CoREAS](htt
 
 The radiomorphing package is under the **GNU LGPLv3** license. See the provided
 [LICENSE](LICENSE) and [COPYING.LESSER](COPYING.LESSER) files.
+
+
+## Contact
+write an email to: `zilles_at_iap.fr`
