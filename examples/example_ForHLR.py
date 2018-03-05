@@ -349,8 +349,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     if DELETE==1:
                         if os.path.isfile(structure+"/"+str(event["tag"])+".voltage.json"):
                             # file exists
-                            os.remove(my_file)
-                            print str(my_file), " newly created"
+                            os.remove(structure+"/"+str(event["tag"])+".voltage.json")
+                            print str(structure)+"/"+str(event["tag"])+".voltage.json", " newly created"
                     
                     
                     #newname= join(data_dir, str(event["tag"])+".voltage.json")
@@ -417,8 +417,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 if DELETE==1:
                     if os.path.isfile(structure+"/"+str(event["tag"])+".tgz"):
                             # file exists
-                        os.remove(my_file)
-                        print str(my_file), " newly created"
+                        os.remove(structure+"/"+str(event["tag"])+".tgz")
+                        print str(structure)+"/"+str(event["tag"])+".tgz", " newly created"
                 
                 if PRINT_OUT:
                     print tar_name
