@@ -12,6 +12,8 @@ import shlex
 import computeVoltage_HorAnt as cv
 #import computeVoltage_massProd_old as cv
 
+from pathlib import Path
+
 #####################################################################
 #  iRODS functions
 #####################################################################
@@ -153,7 +155,10 @@ wait_for_upload = lambda: None  # before loop starts
 file1=None
 file2=None
 
+### hack for redoing runs
 k=0
+DELETE=1
+#####
 
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
 from retro.event import EventIterator
@@ -341,6 +346,15 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     
                     
+                    #### move jsonfile to PROJECT
+                    if DELETE==1:
+                        my_file = Path(structure+"/"+str(event["tag"])+".voltage.json")
+                        if my_file.is_file():
+                            # file exists
+                            os.remove(my_file)
+                            print str(my_file), " newly created"
+                    
+                    
                     #newname= join(data_dir, str(event["tag"])+".voltage.json")
                     #shutil.copy(cvjson_file,newname)
                     try:
@@ -399,6 +413,16 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 ## copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
                 #shutil.move(out_dir, data_dir) 
+                
+
+                #### move jsonfile to PROJECT
+                if DELETE==1:
+                    my_file = Path(structure+"/"+str(event["tag"])+".tgz")
+                    if my_file.is_file():
+                            # file exists
+                        os.remove(my_file)
+                        print str(my_file), " newly created"
+                
                 if PRINT_OUT:
                     print tar_name
                 try:    
