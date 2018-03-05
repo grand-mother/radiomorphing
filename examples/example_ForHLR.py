@@ -12,7 +12,6 @@ import shlex
 import computeVoltage_HorAnt as cv
 #import computeVoltage_massProd_old as cv
 
-from pathlib import Path
 
 #####################################################################
 #  iRODS functions
@@ -349,7 +348,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     #### move jsonfile to PROJECT
                     if DELETE==1:
                         my_file = Path(structure+"/"+str(event["tag"])+".voltage.json")
-                        if my_file.is_file():
+                        if os.path.isfile(my_file):
                             # file exists
                             os.remove(my_file)
                             print str(my_file), " newly created"
@@ -418,7 +417,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #### move jsonfile to PROJECT
                 if DELETE==1:
                     my_file = Path(structure+"/"+str(event["tag"])+".tgz")
-                    if my_file.is_file():
+                    if os.path.isfile(my_file):
                             # file exists
                         os.remove(my_file)
                         print str(my_file), " newly created"
