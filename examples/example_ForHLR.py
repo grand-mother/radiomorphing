@@ -347,8 +347,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     
                     #### move jsonfile to PROJECT
                     if DELETE==1:
-                        my_file = Path(structure+"/"+str(event["tag"])+".voltage.json")
-                        if os.path.isfile(my_file):
+                        if os.path.isfile(structure+"/"+str(event["tag"])+".voltage.json"):
                             # file exists
                             os.remove(my_file)
                             print str(my_file), " newly created"
@@ -416,8 +415,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 #### move jsonfile to PROJECT
                 if DELETE==1:
-                    my_file = Path(structure+"/"+str(event["tag"])+".tgz")
-                    if os.path.isfile(my_file):
+                    if os.path.isfile(structure+"/"+str(event["tag"])+".tgz"):
                             # file exists
                         os.remove(my_file)
                         print str(my_file), " newly created"
