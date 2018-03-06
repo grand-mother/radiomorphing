@@ -6,8 +6,8 @@ import math
 import numpy as np
 #import pylab as pl
 
-wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
-#wkdir = './'
+#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
+wkdir = './'
 
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
@@ -161,11 +161,15 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
     # print [0,0,1],TopoToAntenna([0,0,1],alpha,beta)
     # alpha()
 
+    #print "azim, zen ", azim, zen
+
     #if typ=='X':
         #print "Zenith & azimuth in antenna framework:",zen, azim
     if zen>90:
         #print "Signal originates below antenna horizon! No antenna response computed. Abort."
         return([],[])
+    
+    
     # Now take care of Efield signals
     delt = time1[1]-time1[0];
     Fs = 1/delt
@@ -559,6 +563,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
         try:
             time1_sim, Ex_sim, Ey_sim,Ez_sim = np.loadtxt(efieldtxt,delimiter=' ',usecols=(0,1,2,3),unpack=True)
         except IOError:
+            print efieldtxt , ' couldnt be read in'
             continue
 
         # NOTE: adapt to your time from whatever to s
@@ -614,9 +619,11 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
 
         Xant = [x_sim, y_sim, z_sim]
  	# Hack OMH 24/01 -> used Anne 18Feb
- 	if hack==1:
+ 	#print "hack ", hack, type(hack)
+ 	if int(hack)==1:
             alpha_sim=0.
             beta_sim=0.
+        #print hack,  alpha_sim, beta_sim
         #Xant = [400000, 0 , 0]
         ush = Xmax-Xant
         ush = ush/np.linalg.norm(ush)  # Unitary vector pointing to Xmax from antenna pos
@@ -693,7 +700,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
 ############### end of loop over antennas
     if opt_input=='json':
         if len(voltage)==0:
-            #print "- effective zenith not fulfilled - NO VOLTAGE COMPUTED"
+            print "--- NO VOLTAGE COMPUTED"
             log_event(**event)
         else:
             # add the additional informations to the shower event
