@@ -388,8 +388,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 ##### files still on fh1 - get them copied to the TMP
                 #storage=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) # for ishell
-                storage=join("/media/sf_work/Paris/scripts_GRAND/GRAND-mother/radiomorphing/examples/data/hotspot_hack_hack/", folder1, folder2, folder3,  folder4) # for laptop
-                #storage=join("/project/fh1-project-huepra/qc8087/radiomorphing/examples/data/hotspot-150x67km2/", folder1, folder2, folder3,  folder4) # for fh1
+                #storage=join("/media/sf_work/Paris/scripts_GRAND/GRAND-mother/radiomorphing/examples/data/hotspot_hack_hack/", folder1, folder2, folder3,  folder4) # for laptop
+                storage=join("/project/fh1-project-huepra/qc8087/radiomorphing/examples/data/hotspot-150x67km2/", folder1, folder2, folder3,  folder4) # for fh1
                 extract_file(join(storage, str(event["tag"])+".tgz"), join(tmp_dir, "InterpolatedSignals")) #==out_dir
                 
                 try:
