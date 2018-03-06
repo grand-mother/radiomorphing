@@ -117,25 +117,34 @@ def irods_download(src1, dst, maxtrials, wait):
 
     return wait_for_download
 
-def extract_file(path, to_directory='.'):
-    #if path.endswith('.zip'):
-        #opener, mode = zipfile.ZipFile, 'r'
-    if path.endswith('.tar.gz') or path.endswith('.tgz'):
-        opener, mode = tarfile.open, 'r:gz'
-    elif path.endswith('.tar.bz2') or path.endswith('.tbz'):
-        opener, mode = tarfile.open, 'r:bz2'
-    else: 
-        raise ValueError, "Could not extract `%s` as no appropriate extractor is found" % path
+#def extract_file(path, to_directory='.'):
+    ##if path.endswith('.zip'):
+        ##opener, mode = zipfile.ZipFile, 'r'
+    #print "extract file: ", path , " to ", to_directory
+    #if path.endswith('.tar.gz') or path.endswith('.tgz'):
+        #opener, mode = tarfile.open, 'r:gz'
+    #elif path.endswith('.tar.bz2') or path.endswith('.tbz'):
+        #opener, mode = tarfile.open, 'r:bz2'
+    #else: 
+        #raise ValueError, "Could not extract `%s` as no appropriate extractor is found" % path
     
-    cwd = os.getcwd()
-    os.chdir(to_directory)
+    #cwd = os.getcwd()
+    #os.chdir(to_directory)
     
-    try:
-        file = opener(path, mode)
-        try: file.extractall()
-        finally: file.close()
-    finally:
-        os.chdir(cwd)
+    #try:
+        #file = opener(path, mode)
+        #try: file.extractall()
+        #finally: file.close()
+    #finally:
+        #os.chdir(cwd)
+        
+def extract_file(tar_url, extract_path='.'):
+    print tar_url, " to ", extract_path
+    tar = tarfile.open(tar_url, 'r')
+    for item in tar:
+        tar.extract(item, extract_path)
+        if item.name.find(".tgz") != -1 or item.name.find(".tar") != -1:
+            extract(item.name, "./" + item.name[:item.name.rfind('/')])
 
 
 #####################################################################
@@ -181,9 +190,11 @@ sim_dir=join(tmp_dir, "GrandEventADetailed2") # local copy of refernce shower at
 
 
 #t0=time.time()
-if not os.path.exists(sim_dir):
-    shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
-print "path to sim " , sim_dir
+
+#if not os.path.exists(sim_dir):
+    #shutil.copytree(simref_dir, sim_dir)#tmp_dir+"/GrandEventADetailed2") # copy refernce shower to TMP of core
+#print "path to sim " , sim_dir
+
 #t1=time.time()
 #print " time needed for copy :", t1-t0
     
@@ -364,7 +375,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                             ##os.remove( os.path.join( directory, item ) )
                 #except:
                     #print "Downloading failed "
-                
+                    
+            
                 
                 
                 # new folder naming
@@ -374,6 +386,19 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
                 folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
+                ##### files still on fh1 - get them copied to the TMP
+                #storage=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) # for ishell
+                storage=join("/media/sf_work/Paris/scripts_GRAND/GRAND-mother/radiomorphing/examples/data/hotspot_hack_hack/", folder1, folder2, folder3,  folder4) # for laptop
+                #storage=join("/project/fh1-project-huepra/qc8087/radiomorphing/examples/data/hotspot-150x67km2/", folder1, folder2, folder3,  folder4) # for fh1
+                extract_file(join(storage, str(event["tag"])+".tgz"), join(tmp_dir, "InterpolatedSignals")) #==out_dir
+                
+                try:
+                    for item in out_dir:
+                        if item.endswith(".txt"): # antpos.dat, a#.trace
+                            os.remove(os.path.join(dir_name, item))
+                except:
+                    print ' no voltages traces existed before '
+                    continue
                 
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # following the naming of the tag
@@ -388,16 +413,16 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
                 ##### Start radio morphing
 
-                shower = {
-                        "primary" : primary,       # reference shower "electron" at the moment
-                        "energy" : ep,               # EeV
-                        "zenith" : theta,               # deg (GRAND frame)
-                        "azimuth" : azimuth,                # deg (GRAND frame)
-                        "injection_height" : height,    # m
-                        "altitude" : decay_altitude}   # m
+                #shower = {
+                        #"primary" : primary,       # reference shower "electron" at the moment
+                        #"energy" : ep,               # EeV
+                        #"zenith" : theta,               # deg (GRAND frame)
+                        #"azimuth" : azimuth,                # deg (GRAND frame)
+                        #"injection_height" : height,    # m
+                        #"altitude" : decay_altitude}   # m
 
-                # Perform RADIO MORPHING
-                radiomorphing.process(sim_dir, shower, antennas, out_dir)
+                ## Perform RADIO MORPHING
+                #radiomorphing.process(sim_dir, shower, antennas, out_dir)
                 
                 
 
