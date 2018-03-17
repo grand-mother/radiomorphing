@@ -21,27 +21,6 @@ def getCerenkovAngle(h):
    """
    return numpy.arccos(1. / getn(h))
 
-#def get_integratedn(zen2, height_Xmax, height_ant):
-    
-    #hD=height_Xmax
-    #gamma=numpy.pi-zen2 # counterpart of where it goes to
-    #Re= 6370949 # m, Earth radius
-    #X=0.
-    #i=0.
-    #h=hD
-    #ai=0
-    #step=10
-    
-    #n_ant=getn(height_ant)
-    #n_Xmax=getn(height_Xmax)
-    #print "ant, Xmax  ", n_ant, n_Xmax
-    #print height_ant, height_Xmax
-
-    #n=   (height_ant - 325E-06/0.1218E-03 * numpy.exp( -0.1218E-03 * height_ant)) - (height_Xmax - 325E-06/0.1218E-03 * numpy.exp( -0.1218E-03 * height_Xmax))
-    #print "integrated refractiv index ", n
-    #return  n # integrated n
-
-
 
 
 

@@ -87,7 +87,6 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
     factor_upsampling=1
     if upsampling is not None:
         factor_upsampling=8
-
     c= 299792458.e-9 #m/ns
 
 
@@ -228,38 +227,8 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
     Ampdes *= numpy.exp(1j * phides)
 
     tracedes=(numpy.fft.irfft(Ampdes))
-
-    # dirty hack: still some problems with the phase, need to include an flip by adding pi once:
-    #print "dirty hack for phase flip"
-    import operator
-    index_1, value_1 = max(enumerate(abs(trace1)), key=operator.itemgetter(1))
-    index_2, value_2 = max(enumerate(abs(trace2)), key=operator.itemgetter(1))
-    index_des, value_des = max(enumerate(abs(tracedes)), key=operator.itemgetter(1))
-
     tracedes=tracedes.astype(float)
-    ## NOTE : Phase flip removed at 19/10/2017
-    ### do I really need that flip
-    #if trace1[index_1] >0. and trace2[index_2]>0:
-        #if tracedes[index_des] <0.:
-            #tracedes=tracedes*-1.
-            #print "dirty hack for phase flip"
-
-    #if trace1[index_1] <0. and trace2[index_2]<0:
-        #if tracedes[index_des] >0.:
-            #tracedes=tracedes*-1.
-            #print "dirty hack for phase flip"
-    ##print value_1, value_2, value_des, trace1[index_1], trace2[index_2], tracedes[index_des]
-
-
-
-
-    # TODO: correct for phase shift from phase gradient using index_1 and index_des: xnew= xnew- abs(index_des-index_1)* binning
-    if numpy.linalg.norm(x1-xdes) >200.:
-        #print "another dirty hack for time shifting instead of using phase gradient (doesnt work for this large distances in between antennas)"
-        timeshift= numpy.linalg.norm(x1-xdes) * n1 / c # in ns
-        xnew= xnew +timeshift*1e-9 + (xnew[index_des] - xnew[index_1])
-
-        #print 'timeshift', timeshift*1e-9 , xnew[index_des], xnew[index_1], (xnew[index_des] - xnew[index_1])
+    
 
     ########################### PLOTTING
 
