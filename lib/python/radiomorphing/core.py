@@ -5,14 +5,7 @@
 # it returns files (t, Ex,Ey,Ez + peak amps) in a folder InterpoaltedSignals if it exists. It would make sense also to save the list of the positions in that folder too.
 
 
-# at the moment the scripts get time, Ex, Ey, Ez components (filtered) from the files, not yet respecting projection to shower coord.:
-#.T[0] =time
-#.T[1] =Ex
-#.T[2] =Ey
-#.T[3] =Ez
-#.T[4] =Ev
-#.T[5] =EvxB
-#.T[6] =EvxvxB
+
 
 import os
 import numpy as np
@@ -20,6 +13,11 @@ from interpolation import interpolate_trace
 from frame import UVWGetter
 from scaling import scale
 from utils import getCerenkovAngle, load_trace
+import operator
+
+from utils import getn, get_integratedn, mag
+
+
 
 def _ProjectPointOnLine(a, b, p):
     ap = p-a
@@ -37,7 +35,7 @@ def _ProjectPointOnPlane(a,b,d, p):
     point= p+ t*n
     return point
 
-def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
+def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=None, scaled=True):
     """Interpolate all traces from the (rescaled) closest neighbours
 
     Args:
@@ -106,6 +104,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         az=np.deg2rad(az)
         zen=np.deg2rad(zen)
 
+    #print("test ", zen, az)
 
     ### scaled traces shall be read in
     if scaled:
@@ -117,13 +116,11 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
     #### Finding the Neighbours:  In principal one would like to check which star shape pattern are the closest etc.
     # it reads in all star shape pattern positions from the simulations you hand over via simulations.dat
     positions_sims=np.zeros([len(sims),120,3])
-    #print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
+    print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
-        #if i==0: ## Fixed 14.11.2017
-            #print "WARNING: non-scaled pulses loaded... change if needed, eg by handing over another path where scaled are saved"
-        #posfile = path1 + '/scaled_'+str(sims[i]) +'/antpos.dat'
+
         posfile = path1 +str(sims[i]) +'/antpos.dat'
-        #print posfile
+        print posfile
         if DISPLAY==1:
             print posfile
         positions_sims[i,:,:]=np.loadtxt(posfile)
@@ -134,10 +131,9 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
     #print positions_sims[0, 10]
 
 
-    #ATTENTION herethere should go a LOOP over b over desired antenna position in the list and find always the closest neighbours and get the interpolated pulse shape
 
     for b in xrange(len(positions)):
-        #print "##############  begin of interpolation at desired position ", b, ' at ',  positions[b]
+        print "##############  begin of interpolation at desired position ", b, ' at ',  positions[b]
 
 
         # desired positions has to get projected on all the planes to get the orthogonal distances to the planes
@@ -152,6 +148,9 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
                 positions_sims[i,1], positions[b])
             dist_value[i] = np.linalg.norm(positions[b] - PointPrime)
         dist_plane = np.argsort(dist_value)# sort distances from min to max value and save the id
+        
+        ### how to make sure that no point after the last plane is taken....
+        ### -> do a check whether positions[b] lies in between the projection on the planes
 
         if DISPLAY==1:
             print 'nearest neighbour planes found'
@@ -165,18 +164,28 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         # distance of the first plane in the simulations file
         # dist1 belongs to positions_sims[0,:], normal should always be the same
 
-
+### original
         # NOTE: in principle v and ne should be equal, but isnt at the moment
+        #sz = np.sin(zen)
+        #v = np.array((-np.cos(az) * sz, -np.sin(az) * sz, -np.cos(zen)))
+        #p = np.array((np.mean(positions_sims[0, :, 0]),
+                      #np.mean(positions_sims[0, :, 1]),
+                      #np.mean(positions_sims[0, :, 2]))) ## center of plane 1
+        #Xmax_pos = p - dist1 * v # assuming that Xmax is "before" the planes
+        ## -v constistent with -v(GRANDconventions)
+
+### changed        
         sz = np.sin(zen)
-        v = np.array((-np.cos(az) * sz, -np.sin(az) * sz, -np.cos(zen)))
+        v = np.array((np.cos(az) * sz, np.sin(az) * sz, np.cos(zen)))
         p = np.array((np.mean(positions_sims[0, :, 0]),
                       np.mean(positions_sims[0, :, 1]),
                       np.mean(positions_sims[0, :, 2]))) ## center of plane 1
-        Xmax_pos = p - dist1 * v # assuming that Xmax is "before" the planes
+        Xmax_pos = p + dist1 * v # assuming that Xmax is "before" the planes
+        
+        
 
+        DISPLAY=0
         if DISPLAY==1:
-            import matplotlib.pyplot as plt
-            import pylab
 
             print 'shower direction'
             print  v
@@ -184,7 +193,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
             print dist1, np.linalg.norm(v)
             print 'postion Xmax, position desired'
             print Xmax_pos, positions[b]
-
+        
 
 
         ## now you can construct a line given by Xmax_pos and your disired antenna
@@ -197,11 +206,25 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         Inter_plane0 = s0 * (Xmax_pos - positions[b]) + Xmax_pos
         s1 = np.dot(positions_sims[dist_plane[1], 10] - Xmax_pos, v) * nrm  # intersection Point on plane dist_plane[1]
         Inter_plane1 = s1 * (Xmax_pos - positions[b]) + Xmax_pos
+        
+        ### AZ 15 March 2018
+        ### fix for antenna positions before or beyond the simulated planes, Xmax, Interpoints and antenna position along line of sight -> check for distances
+        if ( np.linalg.norm(Inter_plane0-Xmax_pos) >  np.linalg.norm(positions[b]-Xmax_pos) ) and ( np.linalg.norm(Inter_plane1-Xmax_pos) >  np.linalg.norm(positions[b]-Xmax_pos) ) :
+            print "########  desired antenna position beyond 79km from Xmax.... antenna skipped"
+            continue
+        if ( np.linalg.norm(Inter_plane0-Xmax_pos) <  np.linalg.norm(positions[b]-Xmax_pos) ) and ( np.linalg.norm(Inter_plane1-Xmax_pos) <  np.linalg.norm(positions[b]-Xmax_pos) ) :
+            print "########  desired antenna position beyond 79km from Xmax.... antenna skipped"
+            continue
+        
         ##############
-
+        #DISPLAY=1
         #if DISPLAY==1:
+            #import matplotlib.pyplot as plt
+            #import pylab
+            #from mpl_toolkits.mplot3d import Axes3D  ## just if 3D plotting is needed
 
 
+    
             ### Plot to check whether its working correctly
             #fig = plt.figure(1, facecolor='w', edgecolor='k')
             #ax = fig.add_subplot(111, projection='3d')
@@ -221,12 +244,11 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
 
             #plt.show()
 
-        #plt.close()
+            #plt.close()
+        
+        #DISPLAY=0
 
-
-
-        ################## PulseShape Interpolation part
-
+    ################## Find the right neighbour part
         def get_neighbours(plane, Inter_plane):
             """Rotate into shower coordinates and find the 4 closest neighbours
             """
@@ -236,6 +258,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
             offinx = np.mean(positions_sims[dist_plane[plane], :, 0])
             pos = np.zeros((len(positions_sims[dist_plane[plane], :, :]), 3))
             GetUVW = UVWGetter(offinx,offiny,offinz, zen, az, phigeo, thetageo)
+
 
             def set_index(d, i):
                 """Set the indices of the neighbours antennas.
@@ -250,45 +273,132 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
                 c = np.clip(np.dot(a, b) * nrm, -1., 1.)
                 angle = np.arccos(c)
                 return angle
+            
 
             Inter = GetUVW(Inter_plane)
-            pos[0,:] = GetUVW(positions_sims[dist_plane[plane],0,:])
+            pos[0,:] = GetUVW(positions_sims[dist_plane[plane],0,:]) # just the first simulated antenna as reference axis
+            
+#### oldschool            
+            #Inter = GetUVW(Inter_plane, offinx,offiny,offinz, zen, az, phigeo, thetageo)
+            #pos[0,:] = GetUVW(positions_sims[dist_plane[plane],0,:], offinx,offiny,offinz, zen, az, phigeo, thetageo)
+            
             radius = np.linalg.norm(Inter)
             angle = compute_angle(Inter, pos[0,:])
+            
             d = np.zeros(4, dtype=int)
             set_index(d, 0)
 
-            for i in np.arange(1, len(positions_sims[dist_plane[plane],:,:])):
+# original
+            #for i in np.arange(1, len(positions_sims[dist_plane[plane],:,:])):
+                    #pos[i,:] = GetUVW(positions_sims[dist_plane[plane],i,:])
+                    #if radius <= np.linalg.norm(pos[i,:]):
+                        #continue
+                    #angle1 = compute_angle(pos[i,:], pos[0,:])
+                    
+                    #if (i % 8) > 3:
+                        #angle1 = 2 * np.pi - angle1
+                    #print "angle between first antenna an antenna ", i, " ", np.rad2deg(angle1), pos[0,:],pos[i,:]
+                    #if angle > angle1: # look for clostest alpha, pos[0,:] reference antenna
+                        #set_index(d, i)
+            #return Inter, pos, d
+
+
+# new            
+            for i in np.arange(1, len(positions_sims[dist_plane[plane],:,:])): ## loop over the simulated antenna positions
                     pos[i,:] = GetUVW(positions_sims[dist_plane[plane],i,:])
-                    if radius <= np.linalg.norm(pos[i,:]):
+                    #pos[i,:] = GetUVW(positions_sims[dist_plane[plane],i,:], offinx,offiny,offinz, zen, az, phigeo, thetageo)
+                    
+                    if radius < np.linalg.norm(pos[i,:]): # skip that events, radoius too small
                         continue
+                    
                     angle1 = compute_angle(pos[i,:], pos[0,:])
-                    if (i % 8) > 3:
-                        angle1 = 2 * np.pi - angle1
-                    if angle > angle1: # look for clostest alpha, pos[0,:] reference antenna
-                        set_index(d, i)
+                        
+                    if Inter[2]<0.:
+                        if pos[i,2]<=0:
+                           if angle < angle1: # look for clostest alpha, pos[0,:] reference antenna, angle slightly larger than angle1
+                                set_index(d, i)
+
+                                    
+                    if Inter[2]>0.:
+                        if pos[i,2]>=0:
+                            if angle > angle1: # look for clostest alpha, pos[0,:] reference antenna, angle slightly larger than angle1
+                                set_index(d, i)
+
+            if radius > np.linalg.norm(pos[-1,:]): # be sure that now antenna outside the starhape pattern covered area is chosen
+                set_index(d,130)
+                
             return Inter, pos, d
 
+
+
+
+
+########
+        ### Intersection point, simulated positions in shower coordinates, indizes of neighbours
         Inter_0, pos_0, d0 = get_neighbours(0, Inter_plane0)
         Inter_1, pos_1, d1 = get_neighbours(1, Inter_plane1)
+        
+        #print d0, d1
 
         if (d0 > 120).any() or (d1 > 120).any():
-            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna "+str(b)+" skipped"
+            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
             continue
         try:
-            p1=pos_0[d0[3]] # just to see if point exists
+            print pos_0[d0[3]]
         except IndexError:
-            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna "+str(b)+" skipped"
+            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
             continue
         try:
-            p2=pos_1[d1[3]] # just to see if point exists
+            print pos_1[d1[3]]
         except IndexError:
-            print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna "+str(b)+" skipped"
+            print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
             continue
-
+        
         if DISPLAY==1:
+            import matplotlib.pyplot as plt
+            import pylab
+    
+            ## Plot to check whether its working correctly
+            fig = plt.figure(1, facecolor='w', edgecolor='k')
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(positions_sims[dist_plane[0],:,0], positions_sims[dist_plane[0],:,1], positions_sims[dist_plane[0],:,2], c='red', marker='o', label="surrounding planes")
+            ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
+            ##ax.scatter(positions_sims[dist_plane[2],:,0], positions_sims[dist_plane[2],:,1], positions_sims[dist_plane[2],:,2], c='red', marker='o')
+            ##ax.scatter(positions_sims[dist_plane[3],:,0], positions_sims[dist_plane[3],:,1], positions_sims[dist_plane[3],:,2], c='red', marker='o')
+            #ax.scatter(line[:,0],line[:,1],line[:,2],c='green', marker='o', lw = 0)# c='green', marker='+', s=80)
+            #ax.scatter(line_ortho[:,0],line_ortho[:,1],line_ortho[:,2], c='black', marker='o', lw = 0 )# c='green', marker='+', s=80)
+            ax.scatter(positions[b,0], positions[b,1], positions[b,2], c='blue', marker='x', label='desired position', s=80 )
+            #ax.scatter(test[0], test[1], test[2], c='green', marker='x', s=80) # orthogonal projection of point as test
+            ax.scatter(Xmax_pos[0], Xmax_pos[1], Xmax_pos[2], c='green', marker='x', label='Xmax positions' , s=80)
+            ax.scatter(Inter_plane0[0], Inter_plane0[1], Inter_plane0[2], c='green', marker='o', label='projection on planes' , s=80)
+            ax.scatter(Inter_plane1[0], Inter_plane1[1], Inter_plane1[2], c='green', marker='o', s=80 )
+            
+            
+            #ax.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x')#, s=80)#pos_0[d0[0],0],
+            #ax.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x')#, s=80)#pos_0[d0[1],0],
+            #ax.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x')#, s=80)#pos_0[d0[2],0],
+            #ax.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x')#, s=80) #  pos_0[d0[3],0],
+            
+            ax.scatter( positions_sims[dist_plane[0],d0[0],0], positions_sims[dist_plane[0],d0[0],1], positions_sims[dist_plane[0],d0[0],2], c='blue', marker='x', s=80)
+            ax.scatter( positions_sims[dist_plane[0],d0[1],0], positions_sims[dist_plane[0],d0[1],1], positions_sims[dist_plane[0],d0[1],2], c='blue', marker='x', s=80)
+            ax.scatter( positions_sims[dist_plane[0],d0[2],0], positions_sims[dist_plane[0],d0[2],1], positions_sims[dist_plane[0],d0[2],2], c='blue', marker='x', s=80)
+            ax.scatter( positions_sims[dist_plane[0],d0[3],0], positions_sims[dist_plane[0],d0[3],1], positions_sims[dist_plane[0],d0[3],2], c='blue', marker='x', s=80)
+            
+            
+            plt.legend(loc='upper right')
+            pylab.tight_layout(0.4, 0.5,1.0)
 
+            plt.show()
 
+            plt.close()
+        
+        #DISPLAY=1
+        
+        if DISPLAY==1 and len(pos_0)>0.:# and Inter_0[2]>0:
+                import matplotlib.pyplot as plt
+                import pylab
+
+                print "Check plot"
                 print d0, d1
                     ### Plot to check whether its working correctly
                 fig2 = plt.figure(2, facecolor='w', edgecolor='k')
@@ -298,12 +408,16 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
                 ax2.plot(pos_0[:,1], pos_0[:,2])#pos_0[:,0],
 
 
-                ax2.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x', s=80)#pos_0[d0[0],0],
-                ax2.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x', s=80)#pos_0[d0[1],0],
-                ax2.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x', s=80)#pos_0[d0[2],0],
-                ax2.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x', s=80) #  pos_0[d0[3],0],
+                ax2.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x')#, s=80)#pos_0[d0[0],0],
+                ax2.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x')#, s=80)#pos_0[d0[1],0],
+                ax2.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x')#, s=80)#pos_0[d0[2],0],
+                ax2.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x')#, s=80) #  pos_0[d0[3],0],
+                
+                #ax2.scatter(Xmax_pos[0], Xmax_pos[1], Xmax_pos[2], c='green', marker='x', label='Xmax positions' )#, s=80)
 
-                ax2.scatter( Inter_0[1], Inter_0[2], c='green', marker='+', label='projection on planes' , s=80)#Inter_0[0],
+                
+
+                ax2.scatter( Inter_0[1], Inter_0[2], c='green', marker='+', label='projection on planes', s=80)#Inter_0[0],
                 plt.legend(loc='upper right')
                 plt.tight_layout(0.4, 0.5,1.0)
                 plt.axis('equal')
@@ -346,8 +460,8 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
                 plt.show()
 
 
-
-
+        DISPLAY=0
+        #stop
 
         #if DISPLAY==1:
             #print '\n cloest antennas on ecach plane, Plane 1 and Plane 2'
@@ -386,8 +500,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
 
             #plt.show()
 
-
-
+################## PulseShape Interpolation part
 
         if DISPLAY==1:
 
@@ -598,45 +711,122 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None, scaled=True):
         if DISPLAY==1:
             print ' length of time traces: ', len(txt2.T[0]), len(xnew_desiredx)
 
-        #hexf = abs(hilbert(tracedes_desiredx))
-        #heyf = abs(hilbert(tracedes_desiredy))
-        #hezf = abs(hilbert(tracedes_desiredz))
-        #exm = max(hexf)
-        #eym = max(heyf)
-        #ezm = max(hezf)
-        #amp = sqrt(exm*exm+ eym*eym+ezm*ezm)
 
 
 
 
         ## NOTE: This traces should be saved in some way similar to a#if.trace for and easier inclusion into the filtering process
-#        print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
+        print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
 
         #### lop over b as number of desired positions
         if full==1:
             name=path2+ '/a'+str(b)+'.trace'
-#            print name
+            print name
         else:
             name=path2+ "/a"+str(b)+'_'+str((f1*1e-6)) + '-' + str((f2*1e-6)) + 'MHz.dat'
             # add the Hilbert envelope later.... but just possible if all three components interpolated ### add thsi to name
-#            print name
+            print name
 
-        FILE = open(name, "w+" )
+
+#### would save trace without timing correction
+        #FILE = open(name, "w+" )
+        #for i in range( 0, len(xnew_desiredx) ):
+
+            ##print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
+                #print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
+
+        #FILE.close()
+        
+        
+        
+        
+#################################        
+#### correct timing of radiomorphhing
+## get time of 0 transition between peak and peak, assimung taht this time coresponds to Xmax (sign fipe thr increase and decrease of shower)
+## correct this by decay point to Xmax position / c
+## plus xmax to antenna position / c/n (integrated n over path)
+## => correct zero transition for that resulting time: find bin where min and where max, find inbetween the zero crossing
+## get the diff between that time and the calculated and correct the complete timing for that difference: xnew_desiredx - diff
+
+# decay= (0,0, height)
+# Xmax_pos
+# positions[b]
+
+# since zero crossing takes place in the same timebin for all three components, get the bin from the component with the largest signal.
+
+###Ex
+        if (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
+            trace= tracedes_desiredx
+###Ey        
+        if (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)) and (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
+            trace= tracedes_desiredy 
+###Ez
+        if (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)):
+            trace= tracedes_desiredz
+ 
+
+        ind_min, value_ref0 = min(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
+        ind_max, value_ref1 = max(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
+        if ind_max>ind_min:
+            a=ind_min
+            c=ind_max
+        else:
+            a=ind_max
+            c=ind_min
+        zero_crossings = np.where(np.diff(np.signbit( trace[a:c]  )))[0] # old bin for crossing
+        
+        print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
+        
+        if len(zero_crossings)==1:
+            zero_cross= zero_crossings[0]
+        if len(zero_crossings)==2:
+            zero_cross= zero_crossings[0]
+        if len(zero_crossings)>2:
+            zero_cross=int(np.mean(zero_crossings))
+            
+        # has problems to find zero crossing if electric field strength is very low
+        if len(zero_crossings)==0:
+            #print value_ref0, value_ref1
+            zero_cross=int(abs(a-c)/2.)
+        #print "corrected ",a,c, zero_cross
+        #print "cross time ", xnew_desiredx[zero_cross]
+
+        #from utils import get_integratedn(zen2, height_Xmax, height_ant)
+        decay=np.array([0,0, injection_height])
+        
+        dist_decay_Xmax= mag(decay-Xmax_pos)
+        dist_Xmax_ant=mag(Xmax_pos-positions[b])
+        #print dist_decay_Xmax, dist_Xmax_ant
+        
+        # light velocity
+        c=299792458*1.e-9 #m/ns
+        #n=( getn(Xmax_pos[2])+ getn(positions[b,2]))/2.
+        
+        #n=get_integratedn(zen, Xmax_pos[2], positions[b,2])
+        n=get_integratedn(zen, injection_height, positions[b])
+        
+        newtime= dist_decay_Xmax/c + dist_Xmax_ant/c*n
+        #print "new time ", newtime, " = ", dist_decay_Xmax/c , " + ", dist_Xmax_ant/c*n
+        
+        time_diff= newtime-xnew_desiredx[zero_cross]
+        
+        xnew_desiredx= xnew_desiredx + time_diff* np.ones(len(xnew_desiredx))
+        
+        #print xnew_desiredx[zero_cross]
+
+                
+        FILE = open(path2+ '/a'+str(b)+'.trace', "w+" )
         for i in range( 0, len(xnew_desiredx) ):
 
             #print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
-                print >>FILE,"%.2f %1.3e %1.3e %1.3e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i]) # as .2e in simulation output
-
-
-
-        ## in the last line of the file we wanna write the max. ampl of the hilbert envelope
-        ## something like: amp exm eym ezm
-        #print >>FILE, ""
-        ##print >>FILE,"%1.5f	%1.5e	%1.5e	%1.5e	%1.5f	%1.5e	%1.5e	%1.5e" % (amp, exm, eym, ezm, amp2,exm2, eym2, ezm2)
-        #print >>FILE,"%1.5f %1.5e %1.5e %1.5e" % (amp, exm, eym, ezm)
-
+                print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
 
         FILE.close()
+        
+        
+        
+        
+#################################          
 
         if DISPLAY==1:
             #### PLOTTING
@@ -672,7 +862,8 @@ def process(sim_dir, shower, antennas, out_dir):
         out_dir (str): path where the output traces should be dumped
     """
     # Rescale the simulated showers to the requested one
+    #print "ATTENTION scaling commented"
     scale(sim_dir, **shower)
 
     # interpolate the traces.
-    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"])
+    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"], shower["injection_height"])
