@@ -155,8 +155,8 @@ file1=None
 file2=None
 
 ### hack for redoing runs
-k=0
-DELETE=1
+#k=0
+DELETE=0 # set to one if files have to be overwritten
 #####
 
 ### MAYBE: this has to be done in a script which is one level higher and calling the example.py
@@ -172,13 +172,13 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
    #print event["tau_at_decay"] # all information about vertex of decay: energy before decay in GeV, position in the local [x, y, z], direction of propagation, [ux, uy, uz]
    #print event["tau_at_decay"][2]
    
-################ hack for time-run out for flat array
-   event_list=["E.8e18_Z.93_A.57_La.42_Lo.87_H.3866_D.15713055811818680", "E.2e19_Z.91_A.71_La.42_Lo.89_H.2715_D.24048578662028940", "E.2e19_Z.91_A.83_La.42_Lo.88_H.2475_D.8094261393415502", "E.2e18_Z.91_A.179_La.43_Lo.86_H.2394_D.16573609330273121", "E.7e17_Z.93_A.301_La.41_Lo.86_H.2186_D.25256943230186877", "E.2e19_Z.90_A.342_La.40_Lo.85_H.3998_D.33041746367180958", "E.2e19_Z.89_A.188_La.43_Lo.85_H.755_D.31213281592440988"]
+################# hack for time-run out for flat array
+   #event_list=["E.8e18_Z.93_A.57_La.42_Lo.87_H.3866_D.15713055811818680", "E.2e19_Z.91_A.71_La.42_Lo.89_H.2715_D.24048578662028940", "E.2e19_Z.91_A.83_La.42_Lo.88_H.2475_D.8094261393415502", "E.2e18_Z.91_A.179_La.43_Lo.86_H.2394_D.16573609330273121", "E.7e17_Z.93_A.301_La.41_Lo.86_H.2186_D.25256943230186877", "E.2e19_Z.90_A.342_La.40_Lo.85_H.3998_D.33041746367180958", "E.2e19_Z.89_A.188_La.43_Lo.85_H.755_D.31213281592440988"]
 
-   if event["tag"] in event_list: # as soon as k==1 start the run
-    k=1
-   if k==1:
-###############       
+   #if event["tag"] in event_list: # as soon as k==1 start the run
+    #k=1
+   #if k==1:
+################       
        
        
        
@@ -345,12 +345,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     
                     
-                    #### move jsonfile to PROJECT
-                    if DELETE==1:
-                        if os.path.isfile(structure+"/"+str(event["tag"])+".voltage.json"):
-                            # file exists
-                            os.remove(structure+"/"+str(event["tag"])+".voltage.json")
-                            print str(structure)+"/"+str(event["tag"])+".voltage.json", " newly created"
+                    ##### move jsonfile to PROJECT
+                    #if DELETE==1:
+                        #if os.path.isfile(structure+"/"+str(event["tag"])+".voltage.json"):
+                            ## file exists
+                            #os.remove(structure+"/"+str(event["tag"])+".voltage.json")
+                            #print str(structure)+"/"+str(event["tag"])+".voltage.json", " newly created"
                     
                     
                     #newname= join(data_dir, str(event["tag"])+".voltage.json")
@@ -413,12 +413,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #shutil.move(out_dir, data_dir) 
                 
 
-                #### move jsonfile to PROJECT
-                if DELETE==1:
-                    if os.path.isfile(structure+"/"+str(event["tag"])+".tgz"):
-                            # file exists
-                        os.remove(structure+"/"+str(event["tag"])+".tgz")
-                        print str(structure)+"/"+str(event["tag"])+".tgz", " newly created"
+                ##### move jsonfile to PROJECT
+                #if DELETE==1:
+                    #if os.path.isfile(structure+"/"+str(event["tag"])+".tgz"):
+                            ## file exists
+                        #os.remove(structure+"/"+str(event["tag"])+".tgz")
+                        #print str(structure)+"/"+str(event["tag"])+".tgz", " newly created"
                 
                 if PRINT_OUT:
                     print tar_name
