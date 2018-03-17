@@ -132,7 +132,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
 
     for b in xrange(len(positions)):
-        print "##############  begin of interpolation at desired position ", b, ' at ',  positions[b]
+        #print "##############  begin of interpolation at desired position ", b, ' at ',  positions[b]
 
 
         # desired positions has to get projected on all the planes to get the orthogonal distances to the planes
@@ -209,10 +209,10 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         ### AZ 15 March 2018
         ### fix for antenna positions before or beyond the simulated planes, Xmax, Interpoints and antenna position along line of sight -> check for distances
         if ( np.linalg.norm(Inter_plane0-Xmax_pos) >  np.linalg.norm(positions[b]-Xmax_pos) ) and ( np.linalg.norm(Inter_plane1-Xmax_pos) >  np.linalg.norm(positions[b]-Xmax_pos) ) :
-            print "########  desired antenna position beyond 79km from Xmax.... antenna skipped"
+            print "########  desired antenna position beyond 79km from Xmax.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         if ( np.linalg.norm(Inter_plane0-Xmax_pos) <  np.linalg.norm(positions[b]-Xmax_pos) ) and ( np.linalg.norm(Inter_plane1-Xmax_pos) <  np.linalg.norm(positions[b]-Xmax_pos) ) :
-            print "########  desired antenna position beyond 79km from Xmax.... antenna skipped"
+            print "########  desired antenna position beyond 79km from Xmax.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         
         ##############
@@ -340,17 +340,17 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         #print d0, d1
 
         if (d0 > 120).any() or (d1 > 120).any():
-            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
+            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         try:
             valid=pos_0[d0[3]]
         except IndexError:
-            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
+            print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         try:
             valid=pos_1[d1[3]]
         except IndexError:
-            print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
+            print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         
         if DISPLAY==1:

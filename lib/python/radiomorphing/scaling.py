@@ -387,7 +387,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
 
     posfile = os.path.join(path, "antpos.dat")
     positions = np.loadtxt(posfile)
-    pos_new = np.full_like(positions, 0.)
+    pos_new = np.zeros(positions.shape)
 
     ############################################################################
 
