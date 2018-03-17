@@ -753,66 +753,68 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
 # since zero crossing takes place in the same timebin for all three components, get the bin from the component with the largest signal.
 
-###Ex
-        if (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
-            trace= tracedes_desiredx
-###Ey        
-        if (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)) and (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
-            trace= tracedes_desiredy 
-###Ez
-        if (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)):
-            trace= tracedes_desiredz
- 
+        try:
+    ###Ex
+            if (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredx)-min(tracedes_desiredx)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
+                trace= tracedes_desiredx
+    ###Ey        
+            if (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)) and (max(tracedes_desiredy)-min(tracedes_desiredy)) >  (max(tracedes_desiredz)-min(tracedes_desiredz)):
+                trace= tracedes_desiredy 
+    ###Ez
+            if (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredy)-min(tracedes_desiredy)) and (max(tracedes_desiredz)-min(tracedes_desiredz)) >  (max(tracedes_desiredx)-min(tracedes_desiredx)):
+                trace= tracedes_desiredz
+    
 
-        ind_min, value_ref0 = min(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
-        ind_max, value_ref1 = max(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
-        if ind_max>ind_min:
-            a=ind_min
-            c=ind_max
-        else:
-            a=ind_max
-            c=ind_min
-        zero_crossings = np.where(np.diff(np.signbit( trace[a:c]  )))[0] # old bin for crossing
-        
-        #print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
-        
-        if len(zero_crossings)==1:
-            zero_cross= zero_crossings[0]
-        if len(zero_crossings)==2:
-            zero_cross= zero_crossings[0]
-        if len(zero_crossings)>2:
-            zero_cross=int(np.mean(zero_crossings))
+            ind_min, value_ref0 = min(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
+            ind_max, value_ref1 = max(enumerate(tracedes_desiredx), key=operator.itemgetter(1))
+            if ind_max>ind_min:
+                a=ind_min
+                c=ind_max
+            else:
+                a=ind_max
+                c=ind_min
+            zero_crossings = np.where(np.diff(np.signbit( trace[a:c]  )))[0] # old bin for crossing
             
-        # has problems to find zero crossing if electric field strength is very low
-        if len(zero_crossings)==0:
-            #print value_ref0, value_ref1
-            zero_cross=int(abs(a-c)/2.)
-        #print "corrected ",a,c, zero_cross
-        #print "cross time ", xnew_desiredx[zero_cross]
+            #print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
+            
+            if len(zero_crossings)==1:
+                zero_cross= zero_crossings[0]
+            if len(zero_crossings)==2:
+                zero_cross= zero_crossings[0]
+            if len(zero_crossings)>2:
+                zero_cross=int(np.mean(zero_crossings))
+                
+            # has problems to find zero crossing if electric field strength is very low
+            if len(zero_crossings)==0:
+                #print value_ref0, value_ref1
+                zero_cross=int(abs(a-c)/2.)
+            #print "corrected ",a,c, zero_cross
+            #print "cross time ", xnew_desiredx[zero_cross]
 
-        #from utils import get_integratedn(zen2, height_Xmax, height_ant)
-        decay=np.array([0,0, injection_height])
-        
-        dist_decay_Xmax= mag(decay-Xmax_pos)
-        dist_Xmax_ant=mag(Xmax_pos-positions[b])
-        #print dist_decay_Xmax, dist_Xmax_ant
-        
-        # light velocity
-        c=299792458*1.e-9 #m/ns
-        #n=( getn(Xmax_pos[2])+ getn(positions[b,2]))/2.
-        
-        #n=get_integratedn(zen, Xmax_pos[2], positions[b,2])
-        n=get_integratedn(zen, injection_height, positions[b])
-        
-        newtime= dist_decay_Xmax/c + dist_Xmax_ant/c*n
-        #print "new time ", newtime, " = ", dist_decay_Xmax/c , " + ", dist_Xmax_ant/c*n
-        
-        time_diff= newtime-xnew_desiredx[zero_cross]
-        
-        xnew_desiredx= xnew_desiredx + time_diff* np.ones(len(xnew_desiredx))
-        
-        #print xnew_desiredx[zero_cross]
-
+            #from utils import get_integratedn(zen2, height_Xmax, height_ant)
+            decay=np.array([0,0, injection_height])
+            
+            dist_decay_Xmax= mag(decay-Xmax_pos)
+            dist_Xmax_ant=mag(Xmax_pos-positions[b])
+            #print dist_decay_Xmax, dist_Xmax_ant
+            
+            # light velocity
+            c=299792458*1.e-9 #m/ns
+            #n=( getn(Xmax_pos[2])+ getn(positions[b,2]))/2.
+            
+            #n=get_integratedn(zen, Xmax_pos[2], positions[b,2])
+            n=get_integratedn(zen, injection_height, positions[b])
+            
+            newtime= dist_decay_Xmax/c + dist_Xmax_ant/c*n
+            #print "new time ", newtime, " = ", dist_decay_Xmax/c , " + ", dist_Xmax_ant/c*n
+            
+            time_diff= newtime-xnew_desiredx[zero_cross]
+            
+            xnew_desiredx= xnew_desiredx + time_diff* np.ones(len(xnew_desiredx))
+            
+            #print xnew_desiredx[zero_cross]
+        except UnboundLocalError:
+            print "---- trace couldn't be defined, time not corrected"
                 
         FILE = open(path2+ '/a'+str(b)+'.trace', "w+" )
         for i in range( 0, len(xnew_desiredx) ):
