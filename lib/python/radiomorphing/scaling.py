@@ -420,7 +420,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
 
 
 
-    print "scaled traces saved like this: {:}/a0.trace".format(directory)
+    #print "scaled traces saved like this: {:}/a0.trace".format(directory)
 
     # Save as well the posiion file somewhere if you scale the complete star
     # shape pattern
@@ -430,7 +430,7 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
             args = (pos_new[i,0], pos_new[i,1], pos_new[i,2])
             print >> file_ant, "%.3f	%.3f	%.3f" % args
 
-    print end, "antennas scaled, positions saved in:", posfile_new
+    #print end, "antennas scaled, positions saved in:", posfile_new
 
 
 def scale(sim_dir, primary, energy, zenith, azimuth, injection_height, altitude):

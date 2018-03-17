@@ -120,7 +120,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
 
         posfile = path1 +str(sims[i]) +'/antpos.dat'
-        print posfile
         if DISPLAY==1:
             print posfile
         positions_sims[i,:,:]=np.loadtxt(posfile)
@@ -344,12 +343,12 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
             continue
         try:
-            print pos_0[d0[3]]
+            valid=pos_0[d0[3]]
         except IndexError:
             print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
             continue
         try:
-            print pos_1[d1[3]]
+            valid=pos_1[d1[3]]
         except IndexError:
             print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna skipped"
             continue
@@ -716,16 +715,16 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
 
         ## NOTE: This traces should be saved in some way similar to a#if.trace for and easier inclusion into the filtering process
-        print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
+        #print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
 
         #### lop over b as number of desired positions
         if full==1:
             name=path2+ '/a'+str(b)+'.trace'
-            print name
+            #print name
         else:
             name=path2+ "/a"+str(b)+'_'+str((f1*1e-6)) + '-' + str((f2*1e-6)) + 'MHz.dat'
             # add the Hilbert envelope later.... but just possible if all three components interpolated ### add thsi to name
-            print name
+            #print name
 
 
 #### would save trace without timing correction
@@ -775,7 +774,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             c=ind_min
         zero_crossings = np.where(np.diff(np.signbit( trace[a:c]  )))[0] # old bin for crossing
         
-        print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
+        #print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
         
         if len(zero_crossings)==1:
             zero_cross= zero_crossings[0]
