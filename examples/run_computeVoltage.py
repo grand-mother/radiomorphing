@@ -324,46 +324,46 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     print "antenna corrected: ", event["antennas"][0][0:3]-correction
 
 
-                #print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
+                ##print nu_energy, int(nu_energy), int(nu_energy)*1e18, "{:1.0e}".format(int(nu_energy)*1e18), int(nu_energy*1e18),"{:1.0e}".format(int(nu_energy*1e18))
                 
-                ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
-                #token=str(event["tag"]).split("_")
-                #folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
-                #folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
-                #folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
-                #folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
+                ###set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
+                ##token=str(event["tag"]).split("_")
+                ##folder1=  token[3].split(".")[0]+token[3].split(".")[1] + "_" + token[4].split(".")[0]+token[4].split(".")[1] # La_Lo
+                ##folder2=token[0].split(".")[0]+token[0].split(".")[1] # energy E
+                ##folder3=token[1].split(".")[0]+token[1].split(".")[1] # theta Z
+                ##folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
-                #old folder naming
-                latitude=event["tau_at_decay"][4][0]
-                longitude=event["tau_at_decay"][4][1]
-                energy=event["tau_at_decay"][1] *1e9 # GeV to eV
+                ##old folder naming
+                #latitude=event["tau_at_decay"][4][0]
+                #longitude=event["tau_at_decay"][4][1]
+                #energy=event["tau_at_decay"][1] *1e9 # GeV to eV
                 
-                folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
-                folder2="E{:1.0e}".format(int(energy))
-                folder3="Z"+str(int(event["tau_at_decay"][5][0]))
-                folder4="A"+str(int(event["tau_at_decay"][5][1]))
-                
-                
+                #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
+                #folder2="E{:1.0e}".format(int(energy))
+                #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
+                #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 
                 
-                #### download just tgz-folder from irods to outdir 
-                folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
                 
-                src1=folderiRod+"/"+str(event["tag"])+".tgz" # 
-                try: 
-                    wait_for_download = irods_download(src1,out_dir, 5, 6.)
-                    wait_for_download()
+                
+                ##### download just tgz-folder from irods to outdir 
+                #folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
+                
+                #src1=folderiRod+"/"+str(event["tag"])+".tgz" # 
+                #try: 
+                    #wait_for_download = irods_download(src1,out_dir, 5, 6.)
+                    #wait_for_download()
                     
-                    # unzip tgz folder eventtag and rm out-files
-                    extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
+                    ## unzip tgz folder eventtag and rm out-files
+                    #extract_file(join(out_dir, str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
       
-                    # remove the old out-files
-                    #test = os.listdir( join(out_dir, str(event["tag"])) )
-                    #for item in test:
-                        #if item.endswith(".txt"): 
-                            #os.remove( os.path.join( directory, item ) )
-                except:
-                    print "Downloading failed "
+                    ## remove the old out-files
+                    ##test = os.listdir( join(out_dir, str(event["tag"])) )
+                    ##for item in test:
+                        ##if item.endswith(".txt"): 
+                            ##os.remove( os.path.join( directory, item ) )
+                #except:
+                    #print "Downloading failed "
                 
                 
                 
@@ -375,9 +375,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
                 
+                
+                ##### get data from storage data/"run"_2ndrun, move it to outdir
+                
+                extract_file(join(data_dir, run+"_2ndrun",folder1, folder2, folder3, folder4  , str(event["tag"])+".tgz"), join(out_dir, str(event["tag"])))
+                
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # following the naming of the tag
-                structure=join(run, folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+'freespace', folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -520,12 +525,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
-                folderiRod=join("grand/sim",run,"output_fh1_run2", folder1, folder2, folder3,  folder4) 
+                folderiRod=join("grand/sim",run,"output_fh1_freespace", folder1, folder2, folder3,  folder4) 
                 
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
-                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_run2", folder1, folder2, folder3, folder4)
+                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_freespace", folder1, folder2, folder3, folder4)
                 except:
                     print "failed creating ", folderiRod
 
