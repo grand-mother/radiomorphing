@@ -389,7 +389,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 ##### files still on fh1 - get them copied to the TMP
                 #storage=join("grand/sim",run,"output_fh1_new", folder1, folder2, folder3,  folder4) # for ishell
                 #storage=join("/media/sf_work/Paris/scripts_GRAND/GRAND-mother/radiomorphing/examples/data/hotspot_hack_hack/", folder1, folder2, folder3,  folder4) # for laptop
-                storage=join("/project/fh1-project-huepra/qc8087/radiomorphing/examples/data/hotspot-150x67km2/", folder1, folder2, folder3,  folder4) # for fh1
+                storage=join("/project/fh1-project-huepra/qc8087/radiomorphing/examples/data/"+run+"_2ndrun", folder1, folder2, folder3,  folder4) # for fh1
                 extract_file(join(storage, str(event["tag"])+".tgz"), join(tmp_dir, "InterpolatedSignals")) #==out_dir
                 
                 try:
@@ -402,7 +402,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
                 # following the naming of the tag
-                structure=join(run+"_hack", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+"_freespace", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -544,12 +544,12 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
-                folderiRod=join("grand/sim",run,"output_fh1_fix_hack", folder1, folder2, folder3,  folder4) 
+                folderiRod=join("grand/sim",run,"output_fh1_freespace", folder1, folder2, folder3,  folder4) 
                 
                 # creating directories. This is blocking until it succeeds.
                 # It will retry at most 5 times and will wait 6s between trials.
                 try:
-                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_fix_hack", folder1, folder2, folder3, folder4)
+                    irods_retry(irods_makedirs, 5, 6., "grand/sim/"+run, "output_fh1_freespace", folder1, folder2, folder3, folder4)
                 except:
                     print "failed creating ", folderiRod
 
