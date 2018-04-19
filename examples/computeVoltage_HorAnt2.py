@@ -6,8 +6,8 @@ import math
 import numpy as np
 #import pylab as pl
 
-#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
-wkdir = './'
+wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
+#wkdir = './'
 
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
@@ -35,9 +35,12 @@ XLp=XLp*100
 fr=np.arange(20,301,5)
 
 # Load antenna response files
-fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
-fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
-fileleff_z=wkdir+'HorizonAntenna_Zarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
+#fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
+#fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
+#fileleff_z=wkdir+'HorizonAntenna_Zarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
+fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
+fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
+fileleff_z=wkdir+'HorizonAntenna_Zarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
 freq1,realimp1,reactance1,theta1,phi1,lefftheta1,leffphi1,phasetheta1,phasephi1=np.load(fileleff_x) ### this line cost 6-7s
 RL1=interp1d(fr, RLp, bounds_error=False, fill_value=0.0)(freq1[:,0])
 XL1=interp1d(fr, XLp, bounds_error=False, fill_value=0.0)(freq1[:,0])
