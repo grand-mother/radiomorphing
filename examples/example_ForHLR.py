@@ -307,7 +307,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 # following the naming of the tag
-                structure=join(run, folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+"_freespace", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
