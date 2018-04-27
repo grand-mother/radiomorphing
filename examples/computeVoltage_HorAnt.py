@@ -7,8 +7,8 @@ import numpy as np
 from modules import TopoToAntenna
 #import pylab as pl
 
-#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
-wkdir = './'
+wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
+#wkdir = './'
 
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
@@ -35,9 +35,12 @@ fr=np.arange(20,301,5)
 #fileleff_x=wkdir+'HorizonAntenna_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, NS component
 freespace = 1
 if freespace==1:
-  fileleff_x=wkdir+'butthalftripleX4p5mfreespace_leff.npy' # 
-  fileleff_y=wkdir+'butthalftripleY4p5mfreespace_leff.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component
-  fileleff_z=wkdir+'butthalftripleZ4p5mfreespace_leff.npy'
+  #fileleff_x=wkdir+'butthalftripleX4p5mfreespace_leff.npy' # 
+  #fileleff_y=wkdir+'butthalftripleY4p5mfreespace_leff.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component
+  #fileleff_z=wkdir+'butthalftripleZ4p5mfreespace_leff.npy'
+  fileleff_x=wkdir+'HorizonAntenna_SNarm_freespace.npy' # 
+  fileleff_y=wkdir+'HorizonAntenna_EWarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component
+  fileleff_z=wkdir+'HorizonAntenna_Zarm_freespace.npy'
 else:
   fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, NS component
   fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component
