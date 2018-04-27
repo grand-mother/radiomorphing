@@ -341,7 +341,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     
                     #cv.compute(out_dir, alpha_sim, effective, json_file)
                     #### cv produces a new jsonfile named eventtag.voltage.json in tmp_dir for every event in json_file
-                    cv.compute('json',out_dir,out_dir, effective,theta, azimuth, ep, height, primary,hack, json_file)
+                    #cv.compute('json',out_dir,out_dir, effective,theta, azimuth, ep, height, primary,hack, json_file)
+                    cv.compute('json',out_dir, effective,theta, azimuth, ep, height, primary, json_file)
                     
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     
