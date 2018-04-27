@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from os.path import  join
+from os.path import split, join, realpath
 import sys
 import math
 import numpy as np
