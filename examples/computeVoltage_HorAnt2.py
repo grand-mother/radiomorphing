@@ -34,6 +34,7 @@ XLp=np.array([1.149833973427903 ,  1.347001618559050 ,  1.469876468210024,   1.4
 XLp=XLp*100
 fr=np.arange(20,301,5)
 
+freespace=1
 # Load antenna response files
 #fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
 #fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
@@ -168,7 +169,7 @@ def get_voltage(time1, Ex, Ey, Ez, ush=[1, 0, 0], alpha=0, beta=0, typ="X"):
 
     #if typ=='X':
         #print "Zenith & azimuth in antenna framework:",zen, azim
-    if zen>90:
+    if (freespace==0) and (zen>90):
         #print "Signal originates below antenna horizon! No antenna response computed. Abort."
         return([],[])
     
