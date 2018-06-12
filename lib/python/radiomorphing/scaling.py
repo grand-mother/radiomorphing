@@ -29,7 +29,7 @@ def _getXmax(primarytype, energy, zen2):
     
     #print "for  ", primarytype, " of energy ", energy,  "EeV: Xmax in g/cm2 : ", Xmax
 
-    return Xmax#/abs(np.cos(np.pi-zen2)) # TODO: how to correct for slanted shower
+    return Xmax#/abs(np.cos(np.pi-zen2)) 
 
 def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
     #% Using isothermal Model
@@ -54,44 +54,50 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
         hi= -Re+np.sqrt(Re**2. + ai**2. + hD**2. + 2.*Re*hD - 2*ai*np.cos(gamma) *(Re+hD))## cos(gamma)= + to - at 90dg
         deltah= abs(h-hi) #(h_i-1 - hi)= delta h
         h=hi # new height
-        X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * step *100. #(deltah*100) *abs(1./np.cos(np.pi-zen2)) # Xmax in g/cm2, slanted = Xmax, vertical/ cos(theta); density in g/cm3, h: m->100cm, np.pi-zen2 since it is defined as where the showers comes from, abs(cosine) so correct for minus values
+        X=X+ rho_0*np.exp(-g*M*hi/(R*T)) * step *100. #(deltah*100) s # Xmax in g/cm2, density in g/cm3, h: m->100cm, 
     
     #print "Xmax height in m", h, " distance along axis in m ", ai
-    return h, ai # Xmax_height in m, Xmax_distance in m
+    return h, ai # Xmax_height in m, Xmax_distance along axis in m
 
-def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo, altitude):
+def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo,thetageo, altitude, primary):
     #print "altitude scaling ", altitude
     # 2: target shower, 1: generic shower
     #################### Energy scaling
     #% Energy
-    #kE = Esh*1e18./Esh_ref
     kE = E2/E1 # both in 1e18eV
 
     ############## Azimuth scaling
     #% Azimuth
-    Bgeo = [np.sin(thetageo), 0, np.cos(thetageo)]#  % With North = magnetic North
-    vref = [np.cos(az1)*np.sin(zen1)*-1., np.sin(az1)*np.sin(zen1)*-1., np.cos(zen1)*-1.]# *-1: account for angle conventions
+    Bgeo =  [np.cos(phigeo)*np.sin(thetageo), np.sin(phigeo)*np.sin(thetageo),np.cos(thetageo)]
+    vref = [np.cos(az1)*np.sin(zen1), np.sin(az1)*np.sin(zen1), np.cos(zen1)]
     vxB_ref = np.cross(vref,Bgeo)
     vxB_ref = np.linalg.norm(vxB_ref)/(np.linalg.norm(vref)*np.linalg.norm(Bgeo))
-    v = [np.cos(az2)*np.sin(zen2)*-1., np.sin(az2)*np.sin(zen2)*-1., np.cos(zen2)*-1.]# *-1: account for angle conventions
+    v = [np.cos(az2)*np.sin(zen2), np.sin(az2)*np.sin(zen2), np.cos(zen2)]
     vxB = np.cross(v,Bgeo)
     vxB = np.linalg.norm(vxB)/(np.linalg.norm(v)*np.linalg.norm(Bgeo))
-    kAz = vxB/vxB_ref   # =cos(az2)/cos(az1)
+    kAz = vxB/vxB_ref   
 
-    #print 'included extra scaling factor cos(Delta azimuth) to respect flipping of components'
-    kAz = kAz#* np.cos(az2-az1)
 
     h_ref=injh1
     h=altitude #injh2 # actual altitude wrt sealevel at decay position of target position 
     #%############## Height+Zenith, distance injection point to xmax rougly 8000m
-    #hx_ref = h_ref+8000*np.cos(zen1) #   % Height at reference shower Xmax
-    hx_ref = h_ref+8000*np.tan(0.5*np.pi-zen1) #   % Height at reference shower Xmax
+    primary1='electron'
+    Xmax_primary1 = _getXmax(primary1, E1, zen1)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
+    Xmax_height1, Xmax_distance1 = _dist_decay_Xmax(zen1, injh1, Xmax_primary1)
+
+    #hx_ref = h_ref+Xmax_hor1*np.tan(0.5*np.pi-zen1) #   % Height at reference shower Xmax
+    hx_ref = h_ref+Xmax_distance1*np.sin(0.5*np.pi-zen1) #   % Height at reference shower Xmax
     ac_ref = getCerenkovAngle(hx_ref)
     rho_ref = _getAirDensity(hx_ref)
-    #hx = h+8000*np.cos(zen2)#   % Height at  shower Xmax
-    hx = h+8000*np.tan(0.5*np.pi-zen2)#   % Height at target shower Xmax 
-    ac = getCerenkovAngle(hx) # ATTENTION add here altitude to get correct density
-    rho = _getAirDensity(hx) # ATTENTION add here altitude to get correct density
+
+
+    Xmax_primary2 = _getXmax(primary, E2, zen2)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
+    Xmax_height2, Xmax_distance2 = _dist_decay_Xmax(zen2, injh2, Xmax_primary2)
+    #hx = h+Xmax_hor2*np.tan(0.5*np.pi-zen2)#   % Height at target shower Xmax 
+    hx = h+Xmax_distance2*np.sin(0.5*np.pi-zen2)#   % Height at target shower Xmax 
+
+    ac = getCerenkovAngle(hx) 
+    rho = _getAirDensity(hx) 
     kStretch = float(ac)/float(ac_ref)#  % Stretch factor for the antenna grid
     kRho = np.sqrt(rho_ref/rho)
     kHeight = kRho/kStretch
@@ -107,12 +113,10 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo, altitu
 def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phigeo, thetageo, l,  positions, path, altitude): # hand over parameters from reference shower 1 and target shower 2, the number of the antenna in the star shape you would like to have  and all position of complete starshape (for strechting needed), the path to the folder containing the sim, and for now the frequencies (should be removed if one included the antenna response
 
 #SCALING
-    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, thetageo, altitude)
+    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo, thetageo, altitude, primary)
     kAmp=kE*kAz*kHeight
-#    if l==0:
-#        print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
-
-    #print 'Amplitude changed by kAmp= ' + str(kAmp), ' Position changed by kStretch= '+ str(kStretch)
+    if l==0:
+       print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
 
 
 
@@ -128,8 +132,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
         sys.exit()
 
     
-    
-    ############## ORIGINAL
+    ############## rotation matrix
     ## Convert efield to shower coordinates to apply the scaling
     #R = get_rotation(zen1, az1, phigeo, thetageo)# original
     #EshowerA = np.dot(txt1[:,1:], R) # original
@@ -139,7 +142,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     #EshowerA.T[1] *= kE * kAz * kHeight
     #EshowerA.T[2] *= kE * kHeight
     
-    ###Backtrafo of efield from shower coord (1,2,3) in xyz (4,5,6) after scaling and/or stretching using the target angles
+    ###Backtrafo of efield from shower coord ( after scaling and/or stretching using the target angles
     #Rt = get_rotation(zen2, az2, phigeo, thetageo).T # original
     #v2 = Rt[:,0]# original
     #txt1[:,1:] = np.dot(EshowerA, Rt)# original
@@ -147,19 +150,15 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     
 
 
-######## old school way
+######## slow way
     inc=thetageo
-    
+
     az=az1
     zen=zen1
-
-
-    #same script as for the antenna psoition rotation
-    B = np.array([np.cos(phigeo)*np.sin(inc), np.sin(phigeo)*np.sin(inc),np.cos(inc)]) #from oliviers script including phigeo
+    B = np.array([np.cos(phigeo)*np.sin(inc), np.sin(phigeo)*np.sin(inc),np.cos(inc)]) 
     B=B/np.linalg.norm(B)
-    #print B
 
-    v = np.array([np.cos(az)*np.sin(zen),np.sin(az)*np.sin(zen),np.cos(zen)]) # or *-1: change the direction
+    v = np.array([np.cos(az)*np.sin(zen),np.sin(az)*np.sin(zen),np.cos(zen)]) 
     v=v/np.linalg.norm(v)
     #print v
 
@@ -168,14 +167,11 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     vxvxB = np.cross(v,vxB) #np.array([v[1]*vxB[2]-v[2]*vxB[1],v[2]*vxB[0]-v[0]*vxB[2],v[0]*vxB[1]-v[1]*vxB[0]])# crossproduct
     vxvxB = vxvxB/np.linalg.norm(vxvxB)
     
-    #shape = (len(txt1.T[1]),3)
+    # rotation to showeframe
     EshowerA= np.zeros([len(txt1.T[1]),3])
-    
-    
     EshowerA.T[0]= txt1.T[1]* v[0] +txt1.T[2]*v[1]+ txt1.T[3]*v[2]
     EshowerA.T[1]= txt1.T[1]* vxB[0] +txt1.T[2]*vxB[1]+ txt1.T[3]*vxB[2]
     EshowerA.T[2]= txt1.T[1]* vxvxB[0] +txt1.T[2]*vxvxB[1]+ txt1.T[3]*vxvxB[2]
-
 
     
     ### Scaling, kHeight includes 1/kStretch
@@ -186,20 +182,19 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     #print "az2, zen2 ", az2, zen2
 
     ### angles target shower 
-    v2 = np.array([np.cos(az2)*np.sin(zen2),np.sin(az2)*np.sin(zen2),np.cos(zen2)]) # *-1: account for angle conventions
+    v2 = np.array([np.cos(az2)*np.sin(zen2),np.sin(az2)*np.sin(zen2),np.cos(zen2)]) 
     v2=v2/np.linalg.norm(v2)
-    #print v2
     vxB2 = np.cross(v2,B) #np.array([v[1]*B[2]-v[2]*B[1],v[2]*B[0]-v[0]*B[2],v[0]*B[1]-v[1]*B[0]]) # crossproduct
     vxB2 = vxB2/np.linalg.norm(vxB2)
     vxvxB2 = np.cross(v2,vxB2) #np.array([v[1]*vxB[2]-v[2]*vxB[1],v[2]*vxB[0]-v[0]*vxB[2],v[0]*vxB[1]-v[1]*vxB[0]])# crossproduct
     vxvxB2 = vxvxB2/np.linalg.norm(vxvxB2)
     
-    #print "v2, vxB2, vxvxB2 ", v2, vxB2, vxvxB2 
     
-    #Backtrafo of efield from shower coord (1,2,3) in xyz (4,5,6) after scaling and/or stretching using the target angles        
+    #Backtrafo of efield from shower coord (1,2,3) after scaling and/or stretching using the target angles        
     txt1.T[1] = EshowerA.T[0]* v2[0] +EshowerA.T[1]* vxB2[0] + EshowerA.T[2]*vxvxB2[0]
     txt1.T[2] = EshowerA.T[0]* v2[1] +EshowerA.T[1]* vxB2[1] + EshowerA.T[2]*vxvxB2[1]
     txt1.T[3] = EshowerA.T[0]* v2[2] +EshowerA.T[1]* vxB2[2] + EshowerA.T[2]*vxvxB2[2]
+    
 
 #####
 
@@ -212,11 +207,8 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 #### stretching of positions
 ###############################
 
-### Note: if kStrecht !=1 then one has to perform an interpolation of antenna positions to be able to compare the signals target to scaled
-
     # default parametes of star shape simulation
-    #rings = 15
-    angles= 8
+    angles= 8 # 8 rays in start shape pattern hard coded
     rings = len(positions[:,1])/angles
     beta= (360./angles)/180.*np.pi
 
@@ -228,15 +220,12 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     offinx= np.mean(positions[:,0])
     pos= np.zeros([len(positions[:,1]),3])
     
-    # rotate into shower coordinates for preparation to get the strechted antenna position to compare to - maybe there is a nicer way...
-### original    
+    # rotate into shower coordinates for preparation to get the strechted antenna position to compare to 
     GetUVW = UVWGetter(offinx,offiny,offinz, zen1, az1, phigeo, thetageo)
     for i in np.arange(0,len(positions[:,1])):
         pos[i,:] = GetUVW(positions[i,:], )
     
-    ##### oldschool
-    #for i in np.arange(0,len(positions[:,1])):
-        #pos[i,:] = GetUVW(positions[i,:], offinx,offiny,offinz, zen1, az1, phigeo, thetageo)
+
         
     ###################################   substitue pos by pos and add if condition here
     if kStretch!=1.:
@@ -245,40 +234,30 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
         #print r
         ## get the distance between the antenna
         if np.linalg.norm(pos[6]-pos[5]) != 0.5*np.linalg.norm(pos[7]-pos[5]): # first rings are formed
-            #print ' not equal', np.linalg.norm(pos[6]-pos[5]), 0.5*np.linalg.norm(pos[7]-pos[5])
-            #print "ATTENTION: check whether first rings formed or rays if streching is needed"
             r= np.linalg.norm(pos[16]- pos[8])
             step=8
             #print r
 
         r=r*kStretch # just STRETCHING the radius of the rings
 
-        # default parametes of star shape simulation
-        rings = 15
-        angles= 8
+        ### default parametes of star shape simulation
+        #rings = 15
+        #angles= 8
         beta= (360./angles)/180.*np.pi
 
-        ## get the stretched positions in teh star star shape pattern
-        #pos = np.zeros([rings*angles,3])
 
-        # first rays are formed
-        if np.linalg.norm(pos[6]-pos[5]) == 0.5*np.linalg.norm(pos[7]-pos[5]): # first rings are formed
+        # first rays are formed, depends on how star shapepattern was set up
+        if np.linalg.norm(pos[6]-pos[5]) == 0.5*np.linalg.norm(pos[7]-pos[5]): 
             for n in range(0, angles): # second rings
                 for m in range(0, rings): #first rays
-                    #if n==0 and m==0:
-                        #print " first rays than rings"
-
                     pos[n*rings+m,1 ]= (m+1)*r* np.cos(n*beta)
                     pos[n*rings+m,2 ]= (m+1)*r* np.sin(n*beta)
                     pos[n*rings+m,0 ]= 0.
-                    #if l*angles+ n <8:
-                    #print l, n*rings+l,  pos[n*rings+l], pos[n*rings+l]
+ 
 
         if np.linalg.norm(pos[6]-pos[5]) != 0.5*np.linalg.norm(pos[7]-pos[5]): # first rings are formed
                 for m in range(0, rings): #sencond rays
                     for n in range(0, angles): # first rings
-                        #if n==0 and m==0:
-                            #print " first rings than rays"
 
                         pos[m*angles+n,1 ]= (m+1)*r* np.cos(n*beta) # vxB
                         pos[m*angles+n,2 ]= (m+1)*r* np.sin(n*beta) # vxvxB
@@ -287,50 +266,23 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 ################# CALCULATION OF NEW POSITION VECTOR
 
     ### the new/target position vector of the star shape plane
-    ### pos_prime= p_prime + v_prime *(d_prime + toX)
-
-    #print('distance to max to plane: ',dist1) ## ==toX: fixed distance in m from Xmax to the plane along the shower axis
-    #print(v2) # == v_prime: vector of where target shower goes to
     Xmax_primary = _getXmax(primary, E2, zen2)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
     #print("xmax value " , Xmax_primary)
     Xmax_height, Xmax_distance = _dist_decay_Xmax(zen2, injh2, Xmax_primary)# 8000.# d_prime: distance from decay point to Xmax
-
-    #print("distance to decay to Xmax in m ", Xmax_distance)
     decay=np.array([0.,0.,injh2]) # ==: decay position as defined in zhaires sim, from DANTOn files
 
     # new position vector:
     #x2= decay - v2 * (Xmax_distance+ dist1) # to account for going from Zhaires to GRAND conv
     x2= decay + v2 * (Xmax_distance+ dist1) # to account for going from Zhaires to GRAND conv
 
-    
-    #print "new array center ", x2
-    #print "v ", v2
-    #print "decay ", decay, " Xmax_distance ", Xmax_distance , "dist ", dist1, " v2 ", v2, " new_array ", x2 
-
  ##############################   Backtrafo to XYZ
     ### Now the new 'stretched' positions are calculated in the xyz components, backrotation
     stretch2 = np.zeros([len(pos[:,1]),3])
 
-##### original
     #### backtrafo of positions
     GetXYZ = XYZGetter(x2[0],x2[1],x2[2],zen2, az2,phigeo,thetageo)
     for m in range(0, len(pos[:,1])):
         stretch2[m,:] = GetXYZ(pos[m])
-    #stretch2[l]  # the new wanted antenna position after stretching
-    
-
-##### old school
-        
-    #stretch2.T[0] = pos.T[0]* v2[0] +pos.T[1]* vxB2[0] + pos.T[2]*vxvxB2[0] + x2[0]
-    #stretch2.T[1] = pos.T[0]* v2[1] +pos.T[1]* vxB2[1] + pos.T[2]*vxvxB2[1] + x2[1]
-    #stretch2.T[2] = pos.T[0]* v2[2] +pos.T[1]* vxB2[2] + pos.T[2]*vxvxB2[2] + x2[2]
-
-    
-
-    
-    #if l==0:
-        #print 'position ref to Xmax: ', x2,' position decay: ', decay, ' shower direction: ', v2, ' distance to Xmax: ', dist1, ' distance between Xmax and plane: ', Xmax_distance
-        #print len(x2), l, len(stretch2),
 
 
     #print ' scaling done , positions ', stretch2[l]
@@ -345,15 +297,14 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     """Scale the simulated traces of a run to the shower parameters
     """
 
-    # TODO: could the magnetic field be given as an argument?
-    phigeo =0*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
-                          # North) # phigeo= 0 from simulations inputfile %
+    # TODO: implement the magnetic field strength as an argument
+    phigeo =2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
+                          # North) from simulations inputfile %
                           # In both EVA & Zhaires, North = magnetic North
     thetageo =(180.-27.05)*np.pi/180. # 152.95*np.pi/180. #27.05*np.pi/180.
                                       # (pointing down)-62.95
 
-#    print ""
-#    print "###############################  new plane gets scaled ... ", run
+
 
     path = os.path.join(sim_dir, run) # Path to the simulation run which
                                       # shall later be rescaled or so
@@ -371,20 +322,16 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
 
     # Print the reference parameter values
 #    print "# Reference shower", run
-#    print_parameters(E1, dist1, zen1, az1, injh1)
+    print_parameters(E1, dist1, zen1, az1, injh1)
 
     # Print the target parameter values
 #    print "Target shower parameters"
-#    print_parameters(E2, dist1, zen2, az2, injh2)
-#    print "Altitude at decay ", altitude, " m"  # to correct injh2 for it since Earth curvature taken into account
+    print_parameters(E2, dist1, zen2, az2, injh2)
 
     # Convert the angles from degrees to radians
     zen1, az1, zen2, az2 = map(np.deg2rad, (zen1, az1, zen2, az2))
 
-    ######################################### Stretching the position
-    ################### Assume kStretch=1, no change of zen and height
-    ##r=r*kStretch # just stretching the radius of the rings
-
+    # read-in positions of reference shower
     posfile = os.path.join(path, "antpos.dat")
     positions = np.loadtxt(posfile)
     pos_new = np.zeros(positions.shape)
@@ -395,11 +342,11 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     directory = os.path.join(sim_dir, "scaled_" + run)
     if not os.path.exists(directory):
         os.makedirs(directory)
+    #print directory
 
     end = positions.shape[0]
     #### loop over all antenna positions, outer positions should be skipped
-    #### since then the interpolation doesnt work anymore
-#    print os.path.join(path, "a0.trace")
+    #### since then the interpolation doesnt work anymore (4 neighbours needed
     for l in np.arange(0, end):
         # always hand over all need parameters,1 3D pulse, and all antenna
         # positions
@@ -412,8 +359,6 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
         ###### Writing to file for later use
         name3 = os.path.join(directory, "a{:}.trace".format(l))
         with open(name3, "w+") as FILE:
-            # 1,2,3 Ev,vxb,vxvxb then, 4,5,6 Exyz: since in original raw traces
-            # Exyz are also in columns 456
             for i in range(0, len(txt3.T[0])):
                 args = (txt3.T[0,i], txt3.T[1,i], txt3.T[2,i], txt3.T[3,i])
                 print >> FILE, "%.2f	%1.3e	%1.3e	%1.3e" % args
@@ -430,7 +375,6 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
             args = (pos_new[i,0], pos_new[i,1], pos_new[i,2])
             print >> file_ant, "%.3f	%.3f	%.3f" % args
 
-    #print end, "antennas scaled, positions saved in:", posfile_new
 
 
 def scale(sim_dir, primary, energy, zenith, azimuth, injection_height, altitude):
@@ -450,7 +394,8 @@ def scale(sim_dir, primary, energy, zenith, azimuth, injection_height, altitude)
             # Conversion from Aires to GRAND convention
             zen1 = 180. - zen1
             az1 = 180. + az1
-
+            
+            
             # Scale this run
             _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
                        energy, zenith, azimuth, injection_height, altitude)

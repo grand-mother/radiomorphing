@@ -1,6 +1,6 @@
-# this script does a interpolation of a complete Pulse at any antenna position you desire.
+# this script does the preperation for a interpolation of a complete Pulse at any antenna position you desire.
 #therfore you have to hand over a list of antenna position you would like to have, a file containing the simulations which should be use (names of the planes) and a path whre to find these simlations
-# the script calculates all the prjections on the exiting planes which are needed, and hand the traces and positions over to PulseShape_Interpolation.py which performs the interpoaltion alwys in between two positions
+# the script calculates all the prjections on the exiting planes which are needed, and hand the traces and positions over to the interpolation script which performs the interpoaltion alwys in between two positions
 # whether you wanna use filtered traces is set in this script by hand at the beginning
 # it returns files (t, Ex,Ey,Ez + peak amps) in a folder InterpoaltedSignals if it exists. It would make sense also to save the list of the positions in that folder too.
 
@@ -55,7 +55,8 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
     else:
         if (zenith is not None) or (azimuth is not None):
             raise ValueError("zen / az is not supported for non scaled showers")
-
+    
+    # switch on details print out DISPLAY=1
     DISPLAY=0
 
     #####
@@ -66,10 +67,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
     f2=200.e6 # MHz
     ######
 
-    #taken from oliviers scripts: orientation/direction of magnetic field
-    # TODO: must the magnetic field be consistent with Zhaires simulation?
-    # TODO: could the magnetic field be given as an argument?
-    phigeo =0*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full North) # phigeo= 0 from simulations inputfile % In both EVA & Zhaires, North = magnetic North
+    phigeo =2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full North) # phigeo= 0 from simulations inputfile % In both EVA & Zhaires, North = magnetic North
     thetageo =(180.-27.05)*np.pi/180.  # 152.95*np.pi/180. #27.05*np.pi/180. #; (pointing down)-62.95
 
     # Hand over a list file including the antenna positions you would like to have.
@@ -104,7 +102,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         az=np.deg2rad(az)
         zen=np.deg2rad(zen)
 
-    #print("test ", zen, az)
 
     ### scaled traces shall be read in
     if scaled:
@@ -114,7 +111,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
     # Here the closests Neighbours should be found....
 
     #### Finding the Neighbours:  In principal one would like to check which star shape pattern are the closest etc.
-    # it reads in all star shape pattern positions from the simulations you hand over via simulations.dat
+    # it reads in all star shape pattern positions from the simulations you hand over 
     positions_sims=np.zeros([len(sims),120,3])
     print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
@@ -127,7 +124,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
     if DISPLAY==1:
         print "Antenna files loaded"
-    #print positions_sims[0, 10]
 
 
 
@@ -148,8 +144,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             dist_value[i] = np.linalg.norm(positions[b] - PointPrime)
         dist_plane = np.argsort(dist_value)# sort distances from min to max value and save the id
         
-        ### how to make sure that no point after the last plane is taken....
-        ### -> do a check whether positions[b] lies in between the projection on the planes
 
         if DISPLAY==1:
             print 'nearest neighbour planes found'
@@ -163,17 +157,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         # distance of the first plane in the simulations file
         # dist1 belongs to positions_sims[0,:], normal should always be the same
 
-### original
-        # NOTE: in principle v and ne should be equal, but isnt at the moment
-        #sz = np.sin(zen)
-        #v = np.array((-np.cos(az) * sz, -np.sin(az) * sz, -np.cos(zen)))
-        #p = np.array((np.mean(positions_sims[0, :, 0]),
-                      #np.mean(positions_sims[0, :, 1]),
-                      #np.mean(positions_sims[0, :, 2]))) ## center of plane 1
-        #Xmax_pos = p - dist1 * v # assuming that Xmax is "before" the planes
-        ## -v constistent with -v(GRANDconventions)
-
-### changed        
         sz = np.sin(zen)
         v = np.array((np.cos(az) * sz, np.sin(az) * sz, np.cos(zen)))
         p = np.array((np.mean(positions_sims[0, :, 0]),
@@ -183,7 +166,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         
         
 
-        DISPLAY=0
+    
         if DISPLAY==1:
 
             print 'shower direction'
@@ -277,32 +260,13 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             Inter = GetUVW(Inter_plane)
             pos[0,:] = GetUVW(positions_sims[dist_plane[plane],0,:]) # just the first simulated antenna as reference axis
             
-#### oldschool            
-            #Inter = GetUVW(Inter_plane, offinx,offiny,offinz, zen, az, phigeo, thetageo)
-            #pos[0,:] = GetUVW(positions_sims[dist_plane[plane],0,:], offinx,offiny,offinz, zen, az, phigeo, thetageo)
-            
+         
             radius = np.linalg.norm(Inter)
             angle = compute_angle(Inter, pos[0,:])
             
             d = np.zeros(4, dtype=int)
             set_index(d, 0)
-
-# original
-            #for i in np.arange(1, len(positions_sims[dist_plane[plane],:,:])):
-                    #pos[i,:] = GetUVW(positions_sims[dist_plane[plane],i,:])
-                    #if radius <= np.linalg.norm(pos[i,:]):
-                        #continue
-                    #angle1 = compute_angle(pos[i,:], pos[0,:])
-                    
-                    #if (i % 8) > 3:
-                        #angle1 = 2 * np.pi - angle1
-                    #print "angle between first antenna an antenna ", i, " ", np.rad2deg(angle1), pos[0,:],pos[i,:]
-                    #if angle > angle1: # look for clostest alpha, pos[0,:] reference antenna
-                        #set_index(d, i)
-            #return Inter, pos, d
-
-
-# new            
+           
             for i in np.arange(1, len(positions_sims[dist_plane[plane],:,:])): ## loop over the simulated antenna positions
                     pos[i,:] = GetUVW(positions_sims[dist_plane[plane],i,:])
                     #pos[i,:] = GetUVW(positions_sims[dist_plane[plane],i,:], offinx,offiny,offinz, zen, az, phigeo, thetageo)
@@ -353,114 +317,114 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             print "######## desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         
-        if DISPLAY==1:
-            import matplotlib.pyplot as plt
-            import pylab
+        #if DISPLAY==1:
+            #import matplotlib.pyplot as plt
+            #import pylab
     
-            ## Plot to check whether its working correctly
-            fig = plt.figure(1, facecolor='w', edgecolor='k')
-            ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(positions_sims[dist_plane[0],:,0], positions_sims[dist_plane[0],:,1], positions_sims[dist_plane[0],:,2], c='red', marker='o', label="surrounding planes")
-            ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
-            ##ax.scatter(positions_sims[dist_plane[2],:,0], positions_sims[dist_plane[2],:,1], positions_sims[dist_plane[2],:,2], c='red', marker='o')
-            ##ax.scatter(positions_sims[dist_plane[3],:,0], positions_sims[dist_plane[3],:,1], positions_sims[dist_plane[3],:,2], c='red', marker='o')
-            #ax.scatter(line[:,0],line[:,1],line[:,2],c='green', marker='o', lw = 0)# c='green', marker='+', s=80)
-            #ax.scatter(line_ortho[:,0],line_ortho[:,1],line_ortho[:,2], c='black', marker='o', lw = 0 )# c='green', marker='+', s=80)
-            ax.scatter(positions[b,0], positions[b,1], positions[b,2], c='blue', marker='x', label='desired position', s=80 )
-            #ax.scatter(test[0], test[1], test[2], c='green', marker='x', s=80) # orthogonal projection of point as test
-            ax.scatter(Xmax_pos[0], Xmax_pos[1], Xmax_pos[2], c='green', marker='x', label='Xmax positions' , s=80)
-            ax.scatter(Inter_plane0[0], Inter_plane0[1], Inter_plane0[2], c='green', marker='o', label='projection on planes' , s=80)
-            ax.scatter(Inter_plane1[0], Inter_plane1[1], Inter_plane1[2], c='green', marker='o', s=80 )
+            ### Plot to check whether its working correctly
+            #fig = plt.figure(1, facecolor='w', edgecolor='k')
+            #ax = fig.add_subplot(111, projection='3d')
+            #ax.scatter(positions_sims[dist_plane[0],:,0], positions_sims[dist_plane[0],:,1], positions_sims[dist_plane[0],:,2], c='red', marker='o', label="surrounding planes")
+            #ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
+            ###ax.scatter(positions_sims[dist_plane[2],:,0], positions_sims[dist_plane[2],:,1], positions_sims[dist_plane[2],:,2], c='red', marker='o')
+            ###ax.scatter(positions_sims[dist_plane[3],:,0], positions_sims[dist_plane[3],:,1], positions_sims[dist_plane[3],:,2], c='red', marker='o')
+            ##ax.scatter(line[:,0],line[:,1],line[:,2],c='green', marker='o', lw = 0)# c='green', marker='+', s=80)
+            ##ax.scatter(line_ortho[:,0],line_ortho[:,1],line_ortho[:,2], c='black', marker='o', lw = 0 )# c='green', marker='+', s=80)
+            #ax.scatter(positions[b,0], positions[b,1], positions[b,2], c='blue', marker='x', label='desired position', s=80 )
+            ##ax.scatter(test[0], test[1], test[2], c='green', marker='x', s=80) # orthogonal projection of point as test
+            #ax.scatter(Xmax_pos[0], Xmax_pos[1], Xmax_pos[2], c='green', marker='x', label='Xmax positions' , s=80)
+            #ax.scatter(Inter_plane0[0], Inter_plane0[1], Inter_plane0[2], c='green', marker='o', label='projection on planes' , s=80)
+            #ax.scatter(Inter_plane1[0], Inter_plane1[1], Inter_plane1[2], c='green', marker='o', s=80 )
             
             
-            #ax.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x')#, s=80)#pos_0[d0[0],0],
-            #ax.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x')#, s=80)#pos_0[d0[1],0],
-            #ax.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x')#, s=80)#pos_0[d0[2],0],
-            #ax.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x')#, s=80) #  pos_0[d0[3],0],
+            ##ax.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x')#, s=80)#pos_0[d0[0],0],
+            ##ax.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x')#, s=80)#pos_0[d0[1],0],
+            ##ax.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x')#, s=80)#pos_0[d0[2],0],
+            ##ax.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x')#, s=80) #  pos_0[d0[3],0],
             
-            ax.scatter( positions_sims[dist_plane[0],d0[0],0], positions_sims[dist_plane[0],d0[0],1], positions_sims[dist_plane[0],d0[0],2], c='blue', marker='x', s=80)
-            ax.scatter( positions_sims[dist_plane[0],d0[1],0], positions_sims[dist_plane[0],d0[1],1], positions_sims[dist_plane[0],d0[1],2], c='blue', marker='x', s=80)
-            ax.scatter( positions_sims[dist_plane[0],d0[2],0], positions_sims[dist_plane[0],d0[2],1], positions_sims[dist_plane[0],d0[2],2], c='blue', marker='x', s=80)
-            ax.scatter( positions_sims[dist_plane[0],d0[3],0], positions_sims[dist_plane[0],d0[3],1], positions_sims[dist_plane[0],d0[3],2], c='blue', marker='x', s=80)
+            #ax.scatter( positions_sims[dist_plane[0],d0[0],0], positions_sims[dist_plane[0],d0[0],1], positions_sims[dist_plane[0],d0[0],2], c='blue', marker='x', s=80)
+            #ax.scatter( positions_sims[dist_plane[0],d0[1],0], positions_sims[dist_plane[0],d0[1],1], positions_sims[dist_plane[0],d0[1],2], c='blue', marker='x', s=80)
+            #ax.scatter( positions_sims[dist_plane[0],d0[2],0], positions_sims[dist_plane[0],d0[2],1], positions_sims[dist_plane[0],d0[2],2], c='blue', marker='x', s=80)
+            #ax.scatter( positions_sims[dist_plane[0],d0[3],0], positions_sims[dist_plane[0],d0[3],1], positions_sims[dist_plane[0],d0[3],2], c='blue', marker='x', s=80)
             
             
-            plt.legend(loc='upper right')
-            pylab.tight_layout(0.4, 0.5,1.0)
+            #plt.legend(loc='upper right')
+            #pylab.tight_layout(0.4, 0.5,1.0)
 
-            plt.show()
+            #plt.show()
 
-            plt.close()
+            #plt.close()
         
-        #DISPLAY=1
+        ##DISPLAY=1
         
-        if DISPLAY==1 and len(pos_0)>0.:# and Inter_0[2]>0:
-                import matplotlib.pyplot as plt
-                import pylab
+        #if DISPLAY==1 and len(pos_0)>0.:# and Inter_0[2]>0:
+                #import matplotlib.pyplot as plt
+                #import pylab
 
-                print "Check plot"
-                print d0, d1
-                    ### Plot to check whether its working correctly
-                fig2 = plt.figure(2, facecolor='w', edgecolor='k')
-                ax2 = fig2.add_subplot(111)#, projection='3d')
-                ax2.scatter( pos_0[:,1], pos_0[:,2], c='red', marker='o', label="surrounding planes")#pos_0[:,0],
-                ##ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
-                ax2.plot(pos_0[:,1], pos_0[:,2])#pos_0[:,0],
+                #print "Check plot"
+                #print d0, d1
+                    #### Plot to check whether its working correctly
+                #fig2 = plt.figure(2, facecolor='w', edgecolor='k')
+                #ax2 = fig2.add_subplot(111)#, projection='3d')
+                #ax2.scatter( pos_0[:,1], pos_0[:,2], c='red', marker='o', label="surrounding planes")#pos_0[:,0],
+                ###ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
+                #ax2.plot(pos_0[:,1], pos_0[:,2])#pos_0[:,0],
 
 
-                ax2.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x')#, s=80)#pos_0[d0[0],0],
-                ax2.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x')#, s=80)#pos_0[d0[1],0],
-                ax2.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x')#, s=80)#pos_0[d0[2],0],
-                ax2.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x')#, s=80) #  pos_0[d0[3],0],
+                #ax2.scatter( pos_0[d0[0],1], pos_0[d0[0],2], c='blue', marker='x')#, s=80)#pos_0[d0[0],0],
+                #ax2.scatter( pos_0[d0[1],1], pos_0[d0[1],2], c='blue', marker='x')#, s=80)#pos_0[d0[1],0],
+                #ax2.scatter( pos_0[d0[2],1], pos_0[d0[2],2], c='blue', marker='x')#, s=80)#pos_0[d0[2],0],
+                #ax2.scatter( pos_0[d0[3],1], pos_0[d0[3],2], c='blue', marker='x')#, s=80) #  pos_0[d0[3],0],
                 
-                #ax2.scatter(Xmax_pos[0], Xmax_pos[1], Xmax_pos[2], c='green', marker='x', label='Xmax positions' )#, s=80)
+                ##ax2.scatter(Xmax_pos[0], Xmax_pos[1], Xmax_pos[2], c='green', marker='x', label='Xmax positions' )#, s=80)
 
                 
 
-                ax2.scatter( Inter_0[1], Inter_0[2], c='green', marker='+', label='projection on planes', s=80)#Inter_0[0],
-                plt.legend(loc='upper right')
-                plt.tight_layout(0.4, 0.5,1.0)
-                plt.axis('equal')
+                #ax2.scatter( Inter_0[1], Inter_0[2], c='green', marker='+', label='projection on planes', s=80)#Inter_0[0],
+                #plt.legend(loc='upper right')
+                #plt.tight_layout(0.4, 0.5,1.0)
+                #plt.axis('equal')
 
-                plt.xlabel(r"vxB", fontsize=16)
-                plt.ylabel(r"vxvxB", fontsize=16)
-
-
-
-                #ax3 = fig2.add_subplot(132)#, projection='3d')
-                #ax3.scatter( pos_0[:,0], pos_0[:,1], c='red', marker='o', label="surrounding planes")#pos_0[:,0],
-                ##ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
-                #ax3.plot(pos_0[:,0], pos_0[:,1])#pos_0[:,0],
-
-
-                #ax3.scatter( pos_0[d0[0],0], pos_0[d0[0],1], c='blue', marker='x', s=80)#pos_0[d0[0],0],
-                #ax3.scatter( pos_0[d0[1],0], pos_0[d0[1],1], c='blue', marker='x', s=80)#pos_0[d0[1],0],
-                #ax3.scatter( pos_0[d0[2],0], pos_0[d0[2],1], c='blue', marker='x', s=80)#pos_0[d0[2],0],
-                #ax3.scatter( pos_0[d0[3],0], pos_0[d0[3],1], c='blue', marker='x', s=80) #  pos_0[d0[3],0],
-                #ax3.scatter( Inter_0[0], Inter_0[1], c='green', marker='o', label='projection on planes' , s=80)#Inter_0[0],
-
-                #plt.xlabel(r"v", fontsize=16)
-                #plt.ylabel(r"vxv", fontsize=16)
-
-                #ax3 = fig2.add_subplot(133)#, projection='3d')
-                #ax3.scatter( pos_0[:,0], pos_0[:,2], c='red', marker='o', label="surrounding planes")#pos_0[:,0],
-                ##ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
-                #ax3.plot(pos_0[:,0], pos_0[:,2])#pos_0[:,0],
-
-
-                #ax3.scatter( pos_0[d0[0],0], pos_0[d0[0],2], c='blue', marker='x', s=80)#pos_0[d0[0],0],
-                #ax3.scatter( pos_0[d0[1],0], pos_0[d0[1],2], c='blue', marker='x', s=80)#pos_0[d0[1],0],
-                #ax3.scatter( pos_0[d0[2],0], pos_0[d0[2],2], c='blue', marker='x', s=80)#pos_0[d0[2],0],
-                #ax3.scatter( pos_0[d0[3],0], pos_0[d0[3],2], c='blue', marker='x', s=80) #  pos_0[d0[3],0],
-                #ax3.scatter( Inter_0[0], Inter_0[2], c='green', marker='o', label='projection on planes' , s=80)#Inter_0[0],
-
-                #plt.xlabel(r"v", fontsize=16)
+                #plt.xlabel(r"vxB", fontsize=16)
                 #plt.ylabel(r"vxvxB", fontsize=16)
 
-                plt.show()
 
 
-        DISPLAY=0
-        #stop
+                ##ax3 = fig2.add_subplot(132)#, projection='3d')
+                ##ax3.scatter( pos_0[:,0], pos_0[:,1], c='red', marker='o', label="surrounding planes")#pos_0[:,0],
+                ###ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
+                ##ax3.plot(pos_0[:,0], pos_0[:,1])#pos_0[:,0],
+
+
+                ##ax3.scatter( pos_0[d0[0],0], pos_0[d0[0],1], c='blue', marker='x', s=80)#pos_0[d0[0],0],
+                ##ax3.scatter( pos_0[d0[1],0], pos_0[d0[1],1], c='blue', marker='x', s=80)#pos_0[d0[1],0],
+                ##ax3.scatter( pos_0[d0[2],0], pos_0[d0[2],1], c='blue', marker='x', s=80)#pos_0[d0[2],0],
+                ##ax3.scatter( pos_0[d0[3],0], pos_0[d0[3],1], c='blue', marker='x', s=80) #  pos_0[d0[3],0],
+                ##ax3.scatter( Inter_0[0], Inter_0[1], c='green', marker='o', label='projection on planes' , s=80)#Inter_0[0],
+
+                ##plt.xlabel(r"v", fontsize=16)
+                ##plt.ylabel(r"vxv", fontsize=16)
+
+                ##ax3 = fig2.add_subplot(133)#, projection='3d')
+                ##ax3.scatter( pos_0[:,0], pos_0[:,2], c='red', marker='o', label="surrounding planes")#pos_0[:,0],
+                ###ax.scatter(positions_sims[dist_plane[1],:,0], positions_sims[dist_plane[1],:,1], positions_sims[dist_plane[1],:,2], c='red', marker='o')
+                ##ax3.plot(pos_0[:,0], pos_0[:,2])#pos_0[:,0],
+
+
+                ##ax3.scatter( pos_0[d0[0],0], pos_0[d0[0],2], c='blue', marker='x', s=80)#pos_0[d0[0],0],
+                ##ax3.scatter( pos_0[d0[1],0], pos_0[d0[1],2], c='blue', marker='x', s=80)#pos_0[d0[1],0],
+                ##ax3.scatter( pos_0[d0[2],0], pos_0[d0[2],2], c='blue', marker='x', s=80)#pos_0[d0[2],0],
+                ##ax3.scatter( pos_0[d0[3],0], pos_0[d0[3],2], c='blue', marker='x', s=80) #  pos_0[d0[3],0],
+                ##ax3.scatter( Inter_0[0], Inter_0[2], c='green', marker='o', label='projection on planes' , s=80)#Inter_0[0],
+
+                ##plt.xlabel(r"v", fontsize=16)
+                ##plt.ylabel(r"vxvxB", fontsize=16)
+
+                #plt.show()
+
+
+        
+       
 
         #if DISPLAY==1:
             #print '\n cloest antennas on ecach plane, Plane 1 and Plane 2'
@@ -531,10 +495,10 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
                 ti = load_trace(directory, d[i], suffix)
                 tj = load_trace(directory, d[j], suffix)
             return ti, tj
-
+        
         ## the interpolation of the pulse shape is performed
         txt0, txt1 = get_traces(0, d0, 0, 1)
-        xnew1, tracedes1 = interpolate_trace(txt0.T[0], txt0.T[1], positions_sims[dist_plane[0],d0[0]] , txt1.T[0], txt1.T[1], positions_sims[dist_plane[0],d0[1]], point_online1 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew1, tracedes1 = interpolate_trace(txt0.T[0], txt0.T[1], positions_sims[dist_plane[0],d0[0]] , txt1.T[0], txt1.T[1], positions_sims[dist_plane[0],d0[1]], point_online1 ,upsampling=None, zeroadding=True) 
 
 
         ### Get the pulseshape for the projection on line 2
@@ -546,13 +510,13 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
         ## the interpolation of the pulse shape is performed
         txt2, txt3 = get_traces(0, d0, 2, 3)
-        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[1], positions_sims[dist_plane[0],d0[2]] , txt3.T[0], txt3.T[1], positions_sims[dist_plane[0],d0[3]], point_online2  ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[1], positions_sims[dist_plane[0],d0[2]] , txt3.T[0], txt3.T[1], positions_sims[dist_plane[0],d0[3]], point_online2  ,upsampling=None, zeroadding=True) 
 
         if DISPLAY==1:
             print '\n interpolation plane 1'
         ##### Get the pulse shape of the desired position (projection on plane0) from projection on line1 and 2
         #print ' Pulse Shape '
-        xnew_planex0, tracedes_planex0 =interpolate_trace(xnew1, tracedes1, point_online1, xnew2, tracedes2, point_online2, Inter_plane0, zeroadding=True) #(t1, trace1, x1, t2, trace2, x2, xdes, path, nrdes)
+        xnew_planex0, tracedes_planex0 =interpolate_trace(xnew1, tracedes1, point_online1, xnew2, tracedes2, point_online2, Inter_plane0, zeroadding=True) 
 
 
 
@@ -563,20 +527,21 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         ## Get the pulseshape for the projection on line 1
             print ' Projection 1 '
         ## the interpolation of the pulse shape is performed
-        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[2], positions_sims[dist_plane[0],d0[0]] , txt1.T[0], txt1.T[2], positions_sims[dist_plane[0],d0[1]], point_online1 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[2], positions_sims[dist_plane[0],d0[0]] , txt1.T[0], txt1.T[2], positions_sims[dist_plane[0],d0[1]], point_online1 ,upsampling=None, zeroadding=True) 
+        
 
 
-        ### Get the pulseshape for the projection on line 2 ---- some wrong
+        ### Get the pulseshape for the projection on line 2 
         if DISPLAY==1:
             print '\n\n Projection 2 '
         ## the interpolation of the pulse shape is performed
-        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[2], positions_sims[dist_plane[0],d0[2]] , txt3.T[0], txt3.T[2], positions_sims[dist_plane[0],d0[3]], point_online2  ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[2], positions_sims[dist_plane[0],d0[2]] , txt3.T[0], txt3.T[2], positions_sims[dist_plane[0],d0[3]], point_online2  ,upsampling=None, zeroadding=True) 
 
         if DISPLAY==1:
             print '\n interpolation plane 1'
         ##### Get the pulse shape of the desired position (projection on plane0) from projection on line1 and 2
         #print ' Pulse Shape '
-        xnew_planey0, tracedes_planey0 =interpolate_trace(xnew1, tracedes1, point_online1, xnew2, tracedes2, point_online2, Inter_plane0, zeroadding=True) #(t1, trace1, x1, t2, trace2, x2, xdes, path, nrdes)
+        xnew_planey0, tracedes_planey0 =interpolate_trace(xnew1, tracedes1, point_online1, xnew2, tracedes2, point_online2, Inter_plane0, zeroadding=True) 
 
 
         if DISPLAY==1:
@@ -586,21 +551,21 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         ## Get the pulseshape for the projection on line 1
             print ' Projection 1 '
         ## the interpolation of the pulse shape is performed
-        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[3], positions_sims[dist_plane[0],d0[0]] , txt1.T[0], txt1.T[3], positions_sims[dist_plane[0],d0[1]], point_online1 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[3], positions_sims[dist_plane[0],d0[0]] , txt1.T[0], txt1.T[3], positions_sims[dist_plane[0],d0[1]], point_online1 ,upsampling=None, zeroadding=True) 
 
 
         ### Get the pulseshape for the projection on line 2
         if DISPLAY==1:
             print '\n\n Projection 2 '
         ## the interpolation of the pulse shape is performed
-        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[3], positions_sims[dist_plane[0],d0[2]] , txt3.T[0], txt3.T[3], positions_sims[dist_plane[0],d0[3]], point_online2  ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[3], positions_sims[dist_plane[0],d0[2]] , txt3.T[0], txt3.T[3], positions_sims[dist_plane[0],d0[3]], point_online2  ,upsampling=None, zeroadding=True) 
 
 
         if DISPLAY==1:
          print '\n interpolation plane 1'
         ##### Get the pulse shape of the desired position (projection on plane0) from projection on line1 and 2
         #print ' Pulse Shape '
-        xnew_planez0, tracedes_planez0 =interpolate_trace(xnew1, tracedes1, point_online1, xnew2, tracedes2, point_online2, Inter_plane0, zeroadding=True) #(t1, trace1, x1, t2, trace2, x2, xdes, path, nrdes)
+        xnew_planez0, tracedes_planez0 =interpolate_trace(xnew1, tracedes1, point_online1, xnew2, tracedes2, point_online2, Inter_plane0, zeroadding=True) 
 
 
 
@@ -627,7 +592,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
         ## the interpolation of the pulse shape is performed
         txt0, txt1 = get_traces(1, d1, 0, 1)
-        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[1], positions_sims[dist_plane[1],d1[0]] , txt1.T[0], txt1.T[1], positions_sims[dist_plane[1],d1[1]], point_online12 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[1], positions_sims[dist_plane[1],d1[0]] , txt1.T[0], txt1.T[1], positions_sims[dist_plane[1],d1[1]], point_online12 ,upsampling=None, zeroadding=True) 
 
 
         ### Get the pulseshape for the projection on line 2
@@ -639,13 +604,13 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
         ## the interpolation of the pulse shape is performed
         txt2, txt3 = get_traces(1, d1, 2, 3)
-        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[1], positions_sims[dist_plane[1],d1[2]] , txt3.T[0], txt3.T[1], positions_sims[dist_plane[1],d1[3]], point_online22 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[1], positions_sims[dist_plane[1],d1[2]] , txt3.T[0], txt3.T[1], positions_sims[dist_plane[1],d1[3]], point_online22 ,upsampling=None, zeroadding=True) 
 
         if DISPLAY==1:
             print '\n interpolation plane 2'
         ##### Get the pulse shape of the desired position (projection on plane1) from projection on line1 and 2
         #print ' Pulse Shape '
-        xnew_planex1, tracedes_planex1 =interpolate_trace(xnew1, tracedes1, point_online12, xnew2, tracedes2, point_online22, Inter_plane1, zeroadding=True ) #(t1, trace1, x1, t2, trace2, x2, xdes, path, nrdes)
+        xnew_planex1, tracedes_planex1 =interpolate_trace(xnew1, tracedes1, point_online12, xnew2, tracedes2, point_online22, Inter_plane1, zeroadding=True ) 
 
 
         if DISPLAY==1:
@@ -654,20 +619,19 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         ## Get the pulseshape for the projection on line 1
             print ' Projection 1 '
         ## the interpolation of the pulse shape is performed
-        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[2], positions_sims[dist_plane[1],d1[0]] , txt1.T[0], txt1.T[2], positions_sims[dist_plane[1],d1[1]], point_online12 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[2], positions_sims[dist_plane[1],d1[0]] , txt1.T[0], txt1.T[2], positions_sims[dist_plane[1],d1[1]], point_online12 ,upsampling=None, zeroadding=True) 
 
 
         ### Get the pulseshape for the projection on line 2
         if DISPLAY==1:
             print '\n\n Projection 2 '
         ## the interpolation of the pulse shape is performed
-        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[2], positions_sims[dist_plane[1],d1[2]] , txt3.T[0], txt3.T[2], positions_sims[dist_plane[1],d1[3]], point_online22 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[2], positions_sims[dist_plane[1],d1[2]] , txt3.T[0], txt3.T[2], positions_sims[dist_plane[1],d1[3]], point_online22 ,upsampling=None, zeroadding=True) 
 
         if DISPLAY==1:
             print '\n interpolation plane 2'
-        ##### Get the pulse shape of the desired position (projection on plane1) from projection on line1 and 2
-        #print ' Pulse Shape '
-        xnew_planey1, tracedes_planey1 =interpolate_trace(xnew1, tracedes1, point_online12, xnew2, tracedes2, point_online22, Inter_plane1, zeroadding=True ) #(t1, trace1, x1, t2, trace2, x2, xdes, path, nrdes)
+
+        xnew_planey1, tracedes_planey1 =interpolate_trace(xnew1, tracedes1, point_online12, xnew2, tracedes2, point_online22, Inter_plane1, zeroadding=True ) 
 
 
 
@@ -677,20 +641,19 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         ## Get the pulseshape for the projection on line 1
             print ' Projection 1 '
         ## the interpolation of the pulse shape is performed
-        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[3], positions_sims[dist_plane[1],d1[0]] , txt1.T[0], txt1.T[3], positions_sims[dist_plane[1],d1[1]], point_online12 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew1, tracedes1 =interpolate_trace(txt0.T[0], txt0.T[3], positions_sims[dist_plane[1],d1[0]] , txt1.T[0], txt1.T[3], positions_sims[dist_plane[1],d1[1]], point_online12 ,upsampling=None, zeroadding=True) 
 
 
         ### Get the pulseshape for the projection on line 2
         if DISPLAY==1:
             print '\n\n Projection 2 '
         ## the interpolation of the pulse shape is performed
-        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[3], positions_sims[dist_plane[1],d1[2]] , txt3.T[0], txt3.T[3], positions_sims[dist_plane[1],d1[3]], point_online22 ,upsampling=None, zeroadding=True) #switch on upsamling by factor 8
+        xnew2, tracedes2 =interpolate_trace(txt2.T[0], txt2.T[3], positions_sims[dist_plane[1],d1[2]] , txt3.T[0], txt3.T[3], positions_sims[dist_plane[1],d1[3]], point_online22 ,upsampling=None, zeroadding=True) 
 
         if DISPLAY==1:
             print '\n interpolation plane 2'
-        ##### Get the pulse shape of the desired position (projection on plane1) from projection on line1 and 2
-        #print ' Pulse Shape '
-        xnew_planez1, tracedes_planez1 =interpolate_trace(xnew1, tracedes1, point_online12, xnew2, tracedes2, point_online22, Inter_plane1 , zeroadding=True) #(t1, trace1, x1, t2, trace2, x2, xdes, path, nrdes)
+
+        xnew_planez1, tracedes_planez1 =interpolate_trace(xnew1, tracedes1, point_online12, xnew2, tracedes2, point_online22, Inter_plane1 , zeroadding=True) 
 
 
 
@@ -711,10 +674,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             print ' length of time traces: ', len(txt2.T[0]), len(xnew_desiredx)
 
 
-
-
-
-        ## NOTE: This traces should be saved in some way similar to a#if.trace for and easier inclusion into the filtering process
+##############################
         #print ' interpolated signal belonging to positions in ' +str(path0) +' saved as '
 
         #### lop over b as number of desired positions
@@ -723,15 +683,13 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             #print name
         else:
             name=path2+ "/a"+str(b)+'_'+str((f1*1e-6)) + '-' + str((f2*1e-6)) + 'MHz.dat'
-            # add the Hilbert envelope later.... but just possible if all three components interpolated ### add thsi to name
-            #print name
+
 
 
 #### would save trace without timing correction
         #FILE = open(name, "w+" )
         #for i in range( 0, len(xnew_desiredx) ):
 
-            ##print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
                 #print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
 
         #FILE.close()
@@ -775,7 +733,6 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
                 c=ind_min
             zero_crossings = np.where(np.diff(np.signbit( trace[a:c]  )))[0] # old bin for crossing
             
-            #print "old time ",  a,c, zero_crossings, xnew_desiredx[zero_crossings]
             
             if len(zero_crossings)==1:
                 zero_cross= zero_crossings[0]
@@ -784,42 +741,35 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             if len(zero_crossings)>2:
                 zero_cross=int(np.mean(zero_crossings))
                 
-            # has problems to find zero crossing if electric field strength is very low
+            # if it has problems to find zero crossing if electric field strength is very low
             if len(zero_crossings)==0:
                 #print value_ref0, value_ref1
                 zero_cross=int(abs(a-c)/2.)
-            #print "corrected ",a,c, zero_cross
-            #print "cross time ", xnew_desiredx[zero_cross]
+
 
             #from utils import get_integratedn(zen2, height_Xmax, height_ant)
             decay=np.array([0,0, injection_height])
             
             dist_decay_Xmax= mag(decay-Xmax_pos)
             dist_Xmax_ant=mag(Xmax_pos-positions[b])
-            #print dist_decay_Xmax, dist_Xmax_ant
             
             # light velocity
             c=299792458*1.e-9 #m/ns
-            #n=( getn(Xmax_pos[2])+ getn(positions[b,2]))/2.
             
-            #n=get_integratedn(zen, Xmax_pos[2], positions[b,2])
             n=get_integratedn(zen, injection_height, positions[b])
             
             newtime= dist_decay_Xmax/c + dist_Xmax_ant/c*n
-            #print "new time ", newtime, " = ", dist_decay_Xmax/c , " + ", dist_Xmax_ant/c*n
             
             time_diff= newtime-xnew_desiredx[zero_cross]
             
             xnew_desiredx= xnew_desiredx + time_diff* np.ones(len(xnew_desiredx))
             
-            #print xnew_desiredx[zero_cross]
         except UnboundLocalError:
             print "---- trace couldn't be defined, time not corrected"
                 
         FILE = open(path2+ '/a'+str(b)+'.trace', "w+" )
         for i in range( 0, len(xnew_desiredx) ):
 
-            #print >>FILE,"%3.2f	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e	%1.5e" % (txt.T[0][i], Ex[i], Ey[i], Ez[i], Ev[i], EvxB[i], EvxvxB[i] )
                 print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
 
         FILE.close()
@@ -831,22 +781,12 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
         if DISPLAY==1:
             #### PLOTTING
-            #fig2=plt.figure(2)
-            #plt.plot(txt0.T[0], txt0.T[2], 'b--', label= "first")
-            #plt.plot(txt1.T[0], txt1.T[2], 'r--', label= "second")
-            #plt.plot(xnew1, np.real(tracedes1), 'g--', label= "interpolated1")
 
-            #plt.plot(txt2.T[0], txt2.T[2], 'b:', label= "third")
-            #plt.plot(txt3.T[0], txt3.T[2], 'r:', label= "fourth")
-            fig2 = plt.figure(2, facecolor='w', edgecolor='k')
+            import matplotlib.pyplot as plt
             plt.plot(xnew_planey0, np.real(tracedes_planey0), 'g:', label= "plane 0")
-
             plt.plot(xnew_planey1, np.real(tracedes_planey1), 'b:', label= "plane 1")
-
             plt.plot(xnew_desiredy, np.real(tracedes_desiredy), 'r-', label= "desired")
 
-            #plt.plot(txt2.T[0], txt_test.T[2], 'c:', label= "real")
-                #plt.plot(txt2.T[0], Amplitude, 'b--')
             plt.xlabel(r"time (s)", fontsize=16)
             plt.ylabel(r"Amplitude muV/m ", fontsize=16)
             plt.legend(loc='best')

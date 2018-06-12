@@ -4,7 +4,7 @@
 
 
 
-#called via PulseShape.py
+#called by core.py
 #needs as input antenna position 1 and 2, their traces (filtered or not) in one component, their time , and the desired antenna position
 # return the trace ( in x,y,z coordinate system) and the time from the desired antenna position
 #upsamples the signal
@@ -17,14 +17,11 @@
     ## the wave front are linear on small scales.
 
 
-# ATTENTION:     sometimes the simualted ring positions starts first to form a ring, sometimes first to start a ray
 
 import numpy
 from scipy import signal
 from utils import getn
-#from scipy.signal import butter, lfilter
-#from scipy.signal import blackman,bartlett, hamming, hanning, kaiser
-#from scipy.signal import hilbert
+import operator
 
 
 #################################################################
@@ -91,8 +88,6 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
 
 
     #### calculating weights: should be done with the xyz coordinates
-    #weight1= numpy.linalg.norm(x2-xdes)/numpy.linalg.norm(x2-x1)#0.5 #
-    #weight2= numpy.linalg.norm(xdes-x1)/numpy.linalg.norm(x2-x1)#0.5 #
     #since in star shape pattern it is mor a radial function connection the poistion of same signal as linear go for that solution.
     #if lines ar on a line, it will give the same result as before
     tmp1 = numpy.linalg.norm(x2 - xdes)
@@ -112,47 +107,35 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
         weight2 = 0.
     epsilon = numpy.finfo(float).eps
     if (weight1 > 1. + epsilon) or (weight2 > 1 + epsilon):
-        #print 'x1, x2, xdes, numpy.linalg.norm(x2-x1), numpy.linalg.norm(x2-xdes), numpy.linalg.norm(xdes-x1)'
         print "weight larger 1: ", weight1, weight2, x1, x2, xdes, numpy.linalg.norm(x2-x1), numpy.linalg.norm(x2-xdes), numpy.linalg.norm(xdes-x1)
-        #stop
     if weight1 + weight2 > 1 + epsilon:
         print "PulseShape_Interpolation.py: order in simulated positions. Check whether ring or ray structure formed first"
         print weight1, weight2, weight1 + weight2
 
-    #print "weights " ,weight1,weight2 #, ", positions: ", x1, x2, xdes, " distances: ", numpy.linalg.norm(x2-xdes),  numpy.linalg.norm(xdes-x1), numpy.linalg.norm(x2-x1)
 
     # get refractive indey at the antenna positions
     n1 =getn(x1[2])
     n2 =getn(x2[2])
-    #print "refractive indizes" +str(n1) +" " + str(n2)
 
     #################################################################################
     #### linearly interpolation of the phases
 
     # first antenna
     # upsampling if necessary
-    # upsampling if necessary
     if upsampling is not None:
         trace1 = signal.resample(trace1, len(trace1)*factor_upsampling)
         t1 = numpy.linspace(t1[0], t1[-1], len(trace1)*factor_upsampling, endpoint=False)
-        #t1=xnew*1.e-9# *1.e-9 to get time in s
-        #print len(xnew), len(f)
 
     if zeroadding is True:
         max_element= len(trace1) # to shorten the array after zeroadding
-        #print len(t1),  'star', t1[0], 'desired end', 1.01*t1[-1], 'end', t1[-1], t1[1]-t1[0]
-        xnew=numpy.linspace(t1[0], 1.01*t1[-1], (1.01*t1[-1]-t1[0])/(t1[1]-t1[0]))
-        xnew=xnew*1.e-9
-        #print 'length later', len(xnew[0:max_element])
+        xnew=numpy.linspace(t1[0], 1.01*t1[-1], (1.01*t1[-1]-t1[0])/(t1[2]-t1[1]))
+        xnew=xnew*1.e-9 # ns -> s
         zeros= numpy.zeros(len(xnew)-max_element)
-        #print "diff", len(xnew)-max_element,len(xnew), max_element, xnew[1]-xnew[0]
         f=trace1
         f=numpy.hstack([f,zeros])
-        #print len(xnew), len(f)
     if zeroadding is None:
         f=trace1
         xnew=t1*1.e-9
-        #print len(xnew), len(f)
 
     fsample=1./((xnew[1]-xnew[0])) #Hz
 
@@ -166,7 +149,6 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
     #############################
 
     ### second antenna
-    #txt2=numpy.loadtxt(path+ 'a'+str(nr2)+'.trace')
     ## t in ns, Ex in muV/m, Ey, Ez
     ## NOTE: Time binning always 1ns
 
@@ -175,7 +157,6 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
         trace = signal.resample(trace2, len(trace2)*factor_upsampling)
         trace2=trace
         t2 = numpy.linspace(t2[0], t2[-1], len(trace2)*factor_upsampling, endpoint=False)
-        #t2=t2*1.e-9
 
     if zeroadding is True:
         xnew2=numpy.linspace(t2[0],t2[0]+ (xnew[-1]-xnew[0])*1e9 ,len(xnew)) # get the same length as xnew
@@ -184,9 +165,9 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
         f2=numpy.hstack([f2,zeros])
     if zeroadding is None:
         f2=trace2
-        xnew2=t2*1e-9
+        xnew2=t2*1e-9 # ns -> s
+    fsample2=1./((xnew2[1]-xnew2[0]))# *1.e-9 to get time in s
 
-    fsample2=1./((xnew2[1]-xnew2[0])*1.e-9)# *1.e-9 to get time in s
 
     freq2 = rfftfreq(len(xnew2), 1./fsample2)
     FFT_Ey=numpy.fft.rfft(f2)
@@ -229,6 +210,8 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
     tracedes=(numpy.fft.irfft(Ampdes))
     tracedes=tracedes.astype(float)
     
+    
+
 
     ########################### PLOTTING
 
@@ -276,17 +259,7 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
         plt.ylim([1e1,10e3])
         plt.xlim(flow, fhigh)
 
-        #print len(txt.T[2]), len(txt2.T[2]), len(numpy.real(tracedes)), len(xnew)
 
-        #fig2=plt.figure(2)
-        #plt.plot(txt.T[0], txt.T[2], 'b-', label= "first")
-        #plt.plot(txt2.T[0], txt2.T[2], 'r-', label= "second")
-        #plt.plot(xnew, numpy.real(tracedes), 'g--', label= "interpolated")
-        #plt.plot(txt2.T[0], txt_test.T[2], 'c:', label= "real")
-        ##plt.plot(txt2.T[0], Amplitude, 'b--')
-        #plt.xlabel(r"time (s)", fontsize=16)
-        #plt.ylabel(r"Amplitude muV/m ", fontsize=16)
-        ##plt.show()
         plt.show()
 
     if zeroadding is True:
@@ -299,4 +272,3 @@ def interpolate_trace(t1, trace1, x1, t2, trace2, x2, xdes, upsampling=None,  ze
         xnew=numpy.delete(xnew,-1)
         return xnew*1.e9, tracedes # back to ns
 
-# at some point save the interpolated time traces for laer analysis
