@@ -26,8 +26,8 @@ def getCerenkovAngle(h):
 
 def get_integratedn(zen2, injh2, position):
     
-    # assumption coordinate sytem so that tau decay at (0.,0, injectionheight)
-    # works similar as in Zhaires
+    # assumption coordinate system so that tau decay at (0.,0, injectionheight)
+    # calculation of integrated n implemented similar as in Zhaires
     
     Re= 6370949 # m, Earth radius
     ########
@@ -67,7 +67,6 @@ def get_integratedn(zen2, injh2, position):
             summe=summe+ (  numpy.exp(kr*nexth) -   numpy.exp(kr*currh)  )/ (kr*( nexth - currh) )
         else:
             summe=summe+ numpy.exp(kr*currh)
-        #print "step, height, delta, n ", ai, hi, 1.+ ns*summe/i
         
         currpx=nextpx
         currpy=nextpy
@@ -79,7 +78,6 @@ def get_integratedn(zen2, injh2, position):
     avn= ns*summe/nint
     n= 1.+ avn
     
-    #print "integrated refractiv index ", n
     return  n # integrated n
 
 
