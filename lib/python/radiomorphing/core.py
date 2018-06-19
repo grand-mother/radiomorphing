@@ -35,7 +35,7 @@ def _ProjectPointOnPlane(a,b,d, p):
     point= p+ t*n
     return point
 
-def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=None, scaled=True):
+def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=None, altitude=None, scaled=True):
     """Interpolate all traces from the (rescaled) closest neighbours
 
     Args:
@@ -748,7 +748,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
 
             #from utils import get_integratedn(zen2, height_Xmax, height_ant)
-            decay=np.array([0,0, injection_height])
+            decay=np.array([0,0, injection_height]) # in calling script already desired antenna positions changed to refer to (0,0, injection_height of particle)
             
             dist_decay_Xmax= mag(decay-Xmax_pos)
             dist_Xmax_ant=mag(Xmax_pos-positions[b])
@@ -756,7 +756,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
             # light velocity
             c=299792458*1.e-9 #m/ns
             
-            n=get_integratedn(zen, injection_height, positions[b])
+            n=get_integratedn(zen, injection_height, positions[b])# injection_height needed not altitude
             
             newtime= dist_decay_Xmax/c + dist_Xmax_ant/c*n
             
@@ -807,4 +807,4 @@ def process(sim_dir, shower, antennas, out_dir):
     scale(sim_dir, **shower)
 
     # interpolate the traces.
-    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"], shower["injection_height"])
+    interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"], shower["injection_height"],shower["altitude"])

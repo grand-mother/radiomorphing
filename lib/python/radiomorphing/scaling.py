@@ -31,7 +31,7 @@ def _getXmax(primarytype, energy, zen2):
 
     return Xmax#/abs(np.cos(np.pi-zen2)) 
 
-def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
+def _dist_decay_Xmax(zen2, altitude, Xmax_primary): #zen2: zenith of target shower, altitude counts for xmax position
     #% Using isothermal Model
     rho_0 = 1.225*0.001#; % kg/m3 to 0.001g/cm3: 1g/cm3=1000kg/m3, since X given in g/cm2
     M = 0.028966#;  %kg/mol - 1000g/mol
@@ -39,7 +39,7 @@ def _dist_decay_Xmax(zen2, injh2, Xmax_primary): #zen2: zenith of target shower
     T = 288.#; % K
     R = 8.32#; J/K/mol , J=kg m2/s2
 
-    hD=injh2
+    hD=altitude
     Xmax_primary= Xmax_primary#* 10. # g/cm2 to kg/m2: 1g/cm2 = 10kg/m2
     gamma=np.pi-zen2 # counterpart of where it goes to
     Re= 6370949 # m, Earth radius
@@ -83,7 +83,7 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo,thetageo,
     #%############## Height+Zenith, distance injection point to xmax rougly 8000m
     primary1='electron'
     Xmax_primary1 = _getXmax(primary1, E1, zen1)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
-    Xmax_height1, Xmax_distance1 = _dist_decay_Xmax(zen1, injh1, Xmax_primary1)
+    Xmax_height1, Xmax_distance1 = _dist_decay_Xmax(zen1, injh1, Xmax_primary1)# injh1=altitude for reference shower
 
     #hx_ref = h_ref+Xmax_hor1*np.tan(0.5*np.pi-zen1) #   % Height at reference shower Xmax
     hx_ref = h_ref+Xmax_distance1*np.sin(0.5*np.pi-zen1) #   % Height at reference shower Xmax
@@ -92,7 +92,7 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo,thetageo,
 
 
     Xmax_primary2 = _getXmax(primary, E2, zen2)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
-    Xmax_height2, Xmax_distance2 = _dist_decay_Xmax(zen2, injh2, Xmax_primary2)
+    Xmax_height2, Xmax_distance2 = _dist_decay_Xmax(zen2, altitude, Xmax_primary2) ## actually altitude counts not injection height
     #hx = h+Xmax_hor2*np.tan(0.5*np.pi-zen2)#   % Height at target shower Xmax 
     hx = h+Xmax_distance2*np.sin(0.5*np.pi-zen2)#   % Height at target shower Xmax 
 
@@ -268,7 +268,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     ### the new/target position vector of the star shape plane
     Xmax_primary = _getXmax(primary, E2, zen2)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
     #print("xmax value " , Xmax_primary)
-    Xmax_height, Xmax_distance = _dist_decay_Xmax(zen2, injh2, Xmax_primary)# 8000.# d_prime: distance from decay point to Xmax
+    Xmax_height, Xmax_distance = _dist_decay_Xmax(zen2, altitude, Xmax_primary)# 8000.# d_prime: distance from decay point to Xmax, altitude counts here, not injection height
     decay=np.array([0.,0.,injh2]) # ==: decay position as defined in zhaires sim, from DANTOn files
 
     # new position vector:
