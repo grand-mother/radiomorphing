@@ -17,12 +17,14 @@
 
 import os
 
-run="hotspot-150x67km2"
+run='ulastai-srtmgl1-3deg' #"hotspot-150x67km2"
 hack=0 # hack=1 : off alpha, beta from json file, if =1: alpha=0, beta=0
 
 ### path to where one finds the json files which shall be used
-path_json= '/project/fh1-project-huepra/le6232/data/retro/'+run+'/taus/'
+#path_json= '/project/fh1-project-huepra/le6232/data/retro/'+run+'/taus/' ## usually stored in valentins folder
 #path_json= '/project/fh1-project-huepra/qc8087/radiomorphing/examples/seeds/'+run+'/taus/'
+path_json= '/project/fh1-project-huepra/qc8087/jsonfiles'+run+'/'
+
 
 
 # path to the scripts for radiomorphing
