@@ -570,7 +570,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
         try:
             time1_sim, Ex_sim, Ey_sim,Ez_sim = np.loadtxt(efieldtxt,delimiter=' ',usecols=(0,1,2,3),unpack=True)
         except IOError:
-            print efieldtxt , ' couldnt be read in'
+            #print efieldtxt , ' couldnt be read in'
             continue
 
         # NOTE: adapt to your time from whatever to s
