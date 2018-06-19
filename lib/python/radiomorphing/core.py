@@ -192,10 +192,10 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         ### AZ 15 March 2018
         ### fix for antenna positions before or beyond the simulated planes, Xmax, Interpoints and antenna position along line of sight -> check for distances
         if ( np.linalg.norm(Inter_plane0-Xmax_pos) >  np.linalg.norm(positions[b]-Xmax_pos) ) and ( np.linalg.norm(Inter_plane1-Xmax_pos) >  np.linalg.norm(positions[b]-Xmax_pos) ) :
-            print "########  desired antenna position beyond 79km from Xmax.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
+            #print "########  desired antenna position beyond 79km from Xmax.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         if ( np.linalg.norm(Inter_plane0-Xmax_pos) <  np.linalg.norm(positions[b]-Xmax_pos) ) and ( np.linalg.norm(Inter_plane1-Xmax_pos) <  np.linalg.norm(positions[b]-Xmax_pos) ) :
-            print "########  desired antenna position beyond 79km from Xmax.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
+            #print "########  desired antenna position beyond 79km from Xmax.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         
         ##############
