@@ -11,7 +11,7 @@ import shlex
 ##import computevoltage_ForHLR as cv
 import computeVoltage_HorAnt2 as cv
 #import computeVoltage_massProd_old as cv
-hack=0
+hack=sys.argv[4]
 
 
 #####################################################################
@@ -155,12 +155,8 @@ wait_for_upload = lambda: None  # before loop starts
 file1=None
 file2=None
 
-### hack for redoing runs
-#k=0
-DELETE=0 # set to one if files have to be overwritten
-#####
 
-### MAYBE: this has to be done in a script which is one level higher and calling the example.py
+
 from retro.event import EventIterator
 for event in EventIterator(json_file):#"events-flat.json"): #json files contains a list of events which shall run on one node"
    #print event["tag"] # gives you the tag one after eachother, long
@@ -172,14 +168,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
    #print event["antennas"] # greps all antennas of one event
    #print event["tau_at_decay"] # all information about vertex of decay: energy before decay in GeV, position in the local [x, y, z], direction of propagation, [ux, uy, uz]
    #print event["tau_at_decay"][2]
-   
-################# hack for time-run out for flat array
-   #event_list=["E.8e18_Z.93_A.57_La.42_Lo.87_H.3866_D.15713055811818680", "E.2e19_Z.91_A.71_La.42_Lo.89_H.2715_D.24048578662028940", "E.2e19_Z.91_A.83_La.42_Lo.88_H.2475_D.8094261393415502", "E.2e18_Z.91_A.179_La.43_Lo.86_H.2394_D.16573609330273121", "E.7e17_Z.93_A.301_La.41_Lo.86_H.2186_D.25256943230186877", "E.2e19_Z.90_A.342_La.40_Lo.85_H.3998_D.33041746367180958", "E.2e19_Z.89_A.188_La.43_Lo.85_H.755_D.31213281592440988"]
 
-   #if event["tag"] in event_list: # as soon as k==1 start the run
-    #k=1
-   #if k==1:
-################       
        
        
        
@@ -297,7 +286,6 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 folder4=token[2].split(".")[0]+token[2].split(".")[1] # azimuth A
                 
                 ##set up the you folder structure within data_dir like: latitude-longitude/showerenergy/theta/phi
-                ## ATTENTION: not clear if nu_energy from momentum correct
                 #latitude=event["tau_at_decay"][4][0]
                 #longitude=event["tau_at_decay"][4][1]
                 #energy=event["tau_at_decay"][1] *1e9 # GeV to eV
@@ -307,7 +295,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 # following the naming of the tag
-                structure=join(run+"_freespace", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+"_std", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -346,16 +334,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     cvjson_file=join(tmp_dir, "InterpolatedSignals",str(event["tag"])+".voltage.json") # name of new created jsonfile for each event, folder level same as for event folder
                     
                     
-                    ##### move jsonfile to PROJECT
-                    #if DELETE==1:
-                        #if os.path.isfile(structure+"/"+str(event["tag"])+".voltage.json"):
-                            ## file exists
-                            #os.remove(structure+"/"+str(event["tag"])+".voltage.json")
-                            #print str(structure)+"/"+str(event["tag"])+".voltage.json", " newly created"
-                    
-                    
-                    #newname= join(data_dir, str(event["tag"])+".voltage.json")
-                    #shutil.copy(cvjson_file,newname)
+                    ##### move jsonfile to PROJECT folder
                     try:
                         shutil.move(cvjson_file, structure)
                     except IOError, shutil.Error: 
@@ -372,54 +351,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 tar.add(out_dir, arcname=str(event["tag"]))
                 tar.close()
                 
-                ## set up folder system in irods 
-                #if j>1:
-                    #try:
-                        #print p0.communicate()
-                    #except NameError:
-                        #continue
-                    
-                #folder=run+"/"+structure
-                #cmd='ishell -c "mkdir grand/sim/%s"' %(folder)
-                #try:
-                    #p0=subprocess.Popen(shlex.split(cmd))#, stdout=PIPE, stderr=STDOUT )
-                #except OSError:
-                    #continue
-                
-                ## tarname upload to irods
-                #if j>1:
-                    #try:
-                        #print p.communicate()
-                    #except NameError:
-                        #continue
-                
-                ##If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
-                ##If one of the commands fails, then all other commands following it won't be executed.
-                #cmd1=' ishell -c "put %s grand/sim/%s/"' %( tarname, run)
-                #try:
-                    #p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
-                #except OSError:
-                    #continue
-                
-                ## upload of json file to irods
-                #jfile=cvjson_file #structure+"/"+str(event["tag"])+".voltage.json"
-                #cmd2='ishell -c "put %s grand/sim/%s/"' %( jfile, run)
-                #try:
-                    #p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
-                #except OSError:
-                    #continue
-           
-                
-                ## copy out_dir from $TEMP to $PROJECT (data_dir), rm out_dir
-                #shutil.move(out_dir, data_dir) 
-                
-
-                ##### move jsonfile to PROJECT
-                #if DELETE==1:
-                    #if os.path.isfile(structure+"/"+str(event["tag"])+".tgz"):
-                            ## file exists
-                        #os.remove(structure+"/"+str(event["tag"])+".tgz")
-                        #print str(structure)+"/"+str(event["tag"])+".tgz", " newly created"
+  
                 
                 if PRINT_OUT:
                     print tar_name
@@ -436,20 +368,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
  
                 
                 #### Upload to iRODS: write a shell script and start it
-                ##import subprocess
-                #if j>1:
-                    #try:
-                        #print p0.communicate()
-                    #except NameError:
-                        #print "process not available"
-                    #try:
-                        #print p.communicate()
-                    #except NameError:
-                        #print "process not available"
-                    #try:
-                        #print p1.communicate()
-                    #except NameError:
-                        #print "process not available"
+ 
  
                 UPLOAD=1
                 if UPLOAD==1:
@@ -460,20 +379,13 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 
                     
                     # set up folder system in irods 
-                    #folder=join("grand/sim",run, "La"+str(int(latitude))+"_Lo"+str(int(longitude)), "E{:1.0e}".format(int(energy)), "Z"+str(int(event["tau_at_decay"][5][0])), "A"+str(int(event["tau_at_decay"][5][1])) ) 
-                    #cmd_='ishell -c "mkdir %s"' %(folder)
-                    #folder1="La"+str(int(latitude))+"_Lo"+str(int(longitude))
-                    #folder2="E{:1.0e}".format(int(energy))
-                    #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
-                    #folder4="A"+str(int(event["tau_at_decay"][5][1]))
-                    #folder=join("grand/sim",run,"output_fh1", folder1, folder2, folder3, folder4 ) 
-                    folderiRod=join("grand/sim",run,"output_fh1_freespace", folder1, folder2, folder3,  folder4) 
-                    #print folderiRod
+                    folderiRod=join("grand/sim",run,"output_fh1_std", folder1, folder2, folder3,  folder4) 
+
                     
                     # creating directories. This is blocking until it succeeds.
                     # It will retry at most 5 times and will wait 6s between trials.
                     try:
-                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_freespace", folder1, folder2, folder3,  folder4)
+                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_std", folder1, folder2, folder3,  folder4)
                     except:
                         print "failed creating ", str(folderiRod)
 
@@ -499,53 +411,6 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
     
  
 print "Job done"
-
-
-                #if j>1:
-                    #cmd='ishell -c "cd grand/sim; cd %s ; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
-                #else: 
-                    #cmd='ishell -c "cd grand/sim; cd %s ;mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s; cd %s; mkdir %s"' %(run, "output_fh1", "output_fh1", folder1,folder1  , folder2,folder2  ,folder3,folder3  ,folder4)
-                #try:
-                    #p0=subprocess.Popen(shlex.split(cmd))#,  stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
-                    
-                #except OSError:
-                    #print cmd , " failed"
-                    ##continue
-                
-                
-                ##### file upload
-                ##If you want to execute each command only if the previous one succeeded, then combine them using the && operator:
-                ##If one of the commands fails, then all other commands following it won't be executed.
-                #cmd1='ishell -c "put %s %s/"' %(tgzfile,folder)
-                #try:
-                    #p=subprocess.Popen(shlex.split(cmd1))#, stdout=PIPE, stderr=STDOUT )
-                    ##os.remove(tgzfile)
-                #except OSError:
-                    #print cmd1 , " failed"
-                    ##continue
-                #cmd2='ishell -c "put %s %s/"' %(jfile, folder) 
-                #try:
-                    #p1=subprocess.Popen(shlex.split(cmd2))#, stdout=PIPE, stderr=STDOUT ) 
-                    ##os.remove(jfile)
-                #except OSError:
-                    #print cmd2 , " failed"
-                    ##continue
-                    
-
-
-#try:                
-    #print p0.communicate()
-#except NameError:
-    #pass                 
-#try:                
-    #print p.communicate()
-#except NameError:
-    #pass   
-#try:
-    #print p1.communicate()
-#except NameError:
-    #pass 
-#print "Job done"
 
 
 

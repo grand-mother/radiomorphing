@@ -18,6 +18,7 @@
 import os
 
 run="hotspot-150x67km2"
+hack=0 # hack=1 : off alpha, beta from json file, if =1: alpha=0, beta=0
 
 ### path to where one finds the json files which shall be used
 path_json= '/project/fh1-project-huepra/le6232/data/retro/'+run+'/taus/'
@@ -64,7 +65,7 @@ for i in range(0, len(json_file )):
         file.write('cd $TMP\n')
         message='echo "Job $MOAB_JOBID runnung in $PWD, started: '  +str(path_script)+'/example_ForHLR.py '+str(path_json)+'/'+str(json_file[i])+'"\n'
         file.write(message)
-        script='python '+str(path_script)+'/example_ForHLR.py '+str(path_json)+'/'+str(json_file[i]) + ' $TMP '+run 
+        script='python '+str(path_script)+'/example_ForHLR.py '+str(path_json)+'/'+str(json_file[i]) + ' $TMP '+run + ' '+str(hack)
         file.write(script)
         file.close()
         

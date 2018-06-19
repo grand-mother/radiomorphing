@@ -34,14 +34,17 @@ XLp=np.array([1.149833973427903 ,  1.347001618559050 ,  1.469876468210024,   1.4
 XLp=XLp*100
 fr=np.arange(20,301,5)
 
-freespace=1
-# Load antenna response files
-#fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
-#fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
-#fileleff_z=wkdir+'HorizonAntenna_Zarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
-fileleff_x=wkdir+'HorizonAntenna_SNarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
-fileleff_y=wkdir+'HorizonAntenna_EWarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
-fileleff_z=wkdir+'HorizonAntenna_Zarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
+freespace=0
+# Loaded antenna response files
+if freespace==0:
+    fileleff_x=wkdir+'HorizonAntenna_SNarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
+    fileleff_y=wkdir+'HorizonAntenna_EWarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
+    fileleff_z=wkdir+'HorizonAntenna_Zarm_leff_loaded.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
+### freespace antenna
+if freespace==1:
+    fileleff_x=wkdir+'HorizonAntenna_SNarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for NS
+    fileleff_y=wkdir+'HorizonAntenna_EWarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for EW
+    fileleff_z=wkdir+'HorizonAntenna_Zarm_freespace.npy' # 'HorizonAntenna_leff_notloaded.npy' if loaded=0, EW component, used for vert
 freq1,realimp1,reactance1,theta1,phi1,lefftheta1,leffphi1,phasetheta1,phasephi1=np.load(fileleff_x) ### this line cost 6-7s
 RL1=interp1d(fr, RLp, bounds_error=False, fill_value=0.0)(freq1[:,0])
 XL1=interp1d(fr, XLp, bounds_error=False, fill_value=0.0)(freq1[:,0])
