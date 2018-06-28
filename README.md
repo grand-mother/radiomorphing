@@ -33,6 +33,7 @@ To run the example, execute
 Following information have to be handed over in that file:
 The desired shower parameter as the primary type (electron or pion), its primary energy, its injection height and the injection altitude. Both are needed since for very inclined showers and depending on the definition of the coordinate origin they must not be equivalent due to Earth's curvature. 
 In addition, one has to hand over the direction of propagation (zenith and azimuth of the shower in [GRAND conventions](https://github.com/grand-mother/simulations/blob/master/GRANDAngularConventions.pdf)).
+Be aware of that the coordinate system is defined so that the x-axis is pointing towards the magnetic North and the y-axis to West!
 
 The script will read in the antenna positions and electric field traces of the example reference shower given in `examples/data/GrandEventADetaild2` and write the output electric field traces for the desired antenna positions defined in `antpos_desired.dat` to `examples/data/InterpolatedSignals`
 
@@ -62,7 +63,7 @@ to be handed over as in [example.py](https://github.com/grand-mother/radiomorphi
 - injection height in m == z component/height wrt sealvel of the injection point in m, used to define the injection position as (0,0,injectionheight) as reference
 - altitude == actual height in m of injection above sealevel which can differ from the injectionheight in ase of Earth's curvature and differing original coordinate system for the desired antenna positions
 
-**desired antenna positions**: list of desired antenna positions handed over in x (along North-South), y (along East-West), z (vertical, r.t. sealevel), since positions must be given in the reference frame defined by injection point, for example saved like  [antpos_desired.dat](https://github.com/grand-mother/radiomorphing/blob/master/examples/data/InterpolatedSignals/antpos_desired2.dat)
+**desired antenna positions**: list of desired antenna positions handed over in x (along North-South, pointing to Magnetic North), y (along East-West), z (vertical, r.t. sealevel), since positions must be given in the reference frame defined by injection point, for example saved like  [antpos_desired.dat](https://github.com/grand-mother/radiomorphing/blob/master/examples/data/InterpolatedSignals/antpos_desired2.dat)
  
 **path reference shower**: the reference shower is simulated in star-shape-patterned planes (see folder GrandEventADetailed2, -> ask me for the 16 planes)
 
@@ -82,12 +83,12 @@ Therefor, one can use [ZHAireS](https://arxiv.org/abs/1107.1189) or [CoREAS](htt
 
 - electric field traces have to be stored as:
 
-  `a#.trace`: time in ns, E(North-South) in muV/m, E(East-West) in muV/m, E(Vertical) in muV/m,
+  `a#.trace`: time in ns, E(magnetic North-South) in muV/m, E(East-West) in muV/m, E(Vertical) in muV/m,
   while `#`is the wild card for the antenna ID, starting with 0.
   
 - simulated antenna positions have to be stored as:
 
-  `antpos.dat`: x (along North-South) in m, y (along East-West) in m, z (height wrt sealevel) in m
+  `antpos.dat`: x (along North-South, pointing towards magnetic North) in m, y (along East-West) in m, z (height wrt sealevel) in m
   
   Here, the antenna positions should be defined in the reference frame where the injection of the shower takes place at  
   (0m,0m,injectionheight in m)
