@@ -298,7 +298,8 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     """
 
     # TODO: implement the magnetic field strength as an argument
-    phigeo =2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
+    ## NOTE: ZHAires and reference shower of Radio morphing are in magnetic coordinates (=> azimuth defined wrt to magnetic North): Antenna positions and azimuth given in simulations are defined by x axis pointing towards magnetic North
+    phigeo =0*np.pi/180. #2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
                           # North) from simulations inputfile %
                           # In both EVA & Zhaires, North = magnetic North
     thetageo =(180.-27.05)*np.pi/180. # 152.95*np.pi/180. #27.05*np.pi/180.
@@ -394,7 +395,7 @@ def scale(sim_dir, primary, energy, zenith, azimuth, injection_height, altitude)
             # Conversion from Aires to GRAND convention
             zen1 = 180. - zen1
             az1 = 180. + az1
-            
+
             
             # Scale this run
             _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,

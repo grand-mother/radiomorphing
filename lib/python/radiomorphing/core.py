@@ -67,7 +67,9 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
     f2=200.e6 # MHz
     ######
 
-    phigeo =2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full North) # phigeo= 0 from simulations inputfile % In both EVA & Zhaires, North = magnetic North
+    phigeo =0*np.pi/180. #2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
+                          # North) from simulations inputfile %
+                          # In both EVA & Zhaires, North = magnetic North
     thetageo =(180.-27.05)*np.pi/180.  # 152.95*np.pi/180. #27.05*np.pi/180. #; (pointing down)-62.95
 
     # Hand over a list file including the antenna positions you would like to have.
@@ -112,11 +114,12 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
     #### Finding the Neighbours:  In principal one would like to check which star shape pattern are the closest etc.
     # it reads in all star shape pattern positions from the simulations you hand over 
-    positions_sims=np.zeros([len(sims),120,3])
-    print("Attention: read-in fixed to 120 antennas max. - to be fixed at some point")
+    positions_sims=np.zeros([len(sims),160,3])
+    print("Attention: read-in fixed to 160 antennas max. - to be fixed at some point")
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
 
         posfile = path1 +str(sims[i]) +'/antpos.dat'
+        print posfile
         if DISPLAY==1:
             print posfile
         positions_sims[i,:,:]=np.loadtxt(posfile)
