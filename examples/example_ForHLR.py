@@ -132,7 +132,7 @@ print "path to sim " , sim_dir
 #t1=time.time()
 #print " time needed for copy :", t1-t0
     
-particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta
+particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0, 321, -321] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta, 321:kaon
 
 
 json_file=str(sys.argv[1])
@@ -270,7 +270,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 ant= np.delete(ant, np.s_[3:5], axis=1)
                 #ant= np.array(event["antennas"][0][0:3])
                 #print "all antennas ", ant
-                np.savetxt(antennas, ant-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates
+                np.savetxt(antennas, ant-correction, delimiter='  ',fmt='%.1f')   # in GPS coordinates with decay at (0,0,injection height)
                 if PRINT_OUT:
                     print "antenna corrected: ", event["antennas"][0][0:3]-correction
 
