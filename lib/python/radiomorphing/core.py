@@ -66,8 +66,10 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
     f1= 60.e6 #MHz
     f2=200.e6 # MHz
     ######
-
-    phigeo =0*np.pi/180. #2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
+    
+    ## NOTE: ZHAires and reference shower of Radio morphing are in magnetic coordinates (=> azimuth defined wrt to magnetic North): Antenna positions and azimuth given in simulations are defined by x axis pointing towards magnetic North
+    ## But input and output shall be in geographic ccordinates
+    phigeo =2.72*np.pi/180.  # (ie pointing 2.72 degrees East from full
                           # North) from simulations inputfile %
                           # In both EVA & Zhaires, North = magnetic North
     thetageo =(180.-27.05)*np.pi/180.  # 152.95*np.pi/180. #27.05*np.pi/180. #; (pointing down)-62.95
@@ -96,6 +98,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
                 # Conversion from Aires to GRAND convention
                 zen = np.deg2rad(180. - zen)
                 az = np.deg2rad(180. + az)
+
             sims.append(run)
 
     if scaled:

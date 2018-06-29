@@ -112,8 +112,8 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo,thetageo,
 
 def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phigeo, thetageo, l,  positions, path, altitude): # hand over parameters from reference shower 1 and target shower 2, the number of the antenna in the star shape you would like to have  and all position of complete starshape (for strechting needed), the path to the folder containing the sim, and for now the frequencies (should be removed if one included the antenna response
 
-#SCALING
-    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo, thetageo, altitude, primary)
+#SCALING has to be done in Magnetic coordinate system, target azimuth corrected for that: az2-phigeo
+    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2-phigeo, zen2, injh2, 0.*np.pi/180., thetageo, altitude, primary)
     kAmp=kE*kAz*kHeight
     #if l==0:
        #print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
@@ -155,7 +155,8 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 
     az=az1
     zen=zen1
-    B = np.array([np.cos(phigeo)*np.sin(inc), np.sin(phigeo)*np.sin(inc),np.cos(inc)]) 
+    # NOTE since refernce shower in magnetic coordinates (MAG) phigeo=0deg
+    B = np.array([np.cos(0.*np.pi/180.)*np.sin(inc), np.sin(0.*np.pi/180.)*np.sin(inc),np.cos(inc)]) 
     B=B/np.linalg.norm(B)
 
     v = np.array([np.cos(az)*np.sin(zen),np.sin(az)*np.sin(zen),np.cos(zen)]) 
@@ -181,7 +182,9 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 
     #print "az2, zen2 ", az2, zen2
 
-    ### angles target shower 
+    ### angles, target shower in Geographic ccordinates
+    B = np.array([np.cos(phigeo)*np.sin(inc), np.sin(phigeo)*np.sin(inc),np.cos(inc)]) 
+    B=B/np.linalg.norm(B)
     v2 = np.array([np.cos(az2)*np.sin(zen2),np.sin(az2)*np.sin(zen2),np.cos(zen2)]) 
     v2=v2/np.linalg.norm(v2)
     vxB2 = np.cross(v2,B) #np.array([v[1]*B[2]-v[2]*B[1],v[2]*B[0]-v[0]*B[2],v[0]*B[1]-v[1]*B[0]]) # crossproduct
@@ -190,7 +193,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     vxvxB2 = vxvxB2/np.linalg.norm(vxvxB2)
     
     
-    #Backtrafo of efield from shower coord (1,2,3) after scaling and/or stretching using the target angles        
+    #Backtrafo of efield from shower coord (1,2,3) after scaling and/or stretching using the target angles, efield now in geographic coordinates    
     txt1.T[1] = EshowerA.T[0]* v2[0] +EshowerA.T[1]* vxB2[0] + EshowerA.T[2]*vxvxB2[0]
     txt1.T[2] = EshowerA.T[0]* v2[1] +EshowerA.T[1]* vxB2[1] + EshowerA.T[2]*vxvxB2[1]
     txt1.T[3] = EshowerA.T[0]* v2[2] +EshowerA.T[1]* vxB2[2] + EshowerA.T[2]*vxvxB2[2]
@@ -214,6 +217,8 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
 
 
 ################################
+
+#### NOTE scaled reference position in geographic coordinates as desired antenna positions
  # Calculating the new stretched antenna positions in the star shape
     offinz= np.mean(positions[:,2])
     offiny= np.mean(positions[:,1])
@@ -221,7 +226,8 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     pos= np.zeros([len(positions[:,1]),3])
     
     # rotate into shower coordinates for preparation to get the strechted antenna position to compare to 
-    GetUVW = UVWGetter(offinx,offiny,offinz, zen1, az1, phigeo, thetageo)
+    ### NOTE: since reference shower was simulated in magnetic coordinate system (MAG) phigeo=0deg and az1
+    GetUVW = UVWGetter(offinx,offiny,offinz, zen1, az1, 0.*np.pi/180., thetageo)
     for i in np.arange(0,len(positions[:,1])):
         pos[i,:] = GetUVW(positions[i,:], )
     
@@ -279,7 +285,7 @@ def _scalingpulse(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, ph
     ### Now the new 'stretched' positions are calculated in the xyz components, backrotation
     stretch2 = np.zeros([len(pos[:,1]),3])
 
-    #### backtrafo of positions
+    #### backtrafo of positions, positions in geographic coordinates
     GetXYZ = XYZGetter(x2[0],x2[1],x2[2],zen2, az2,phigeo,thetageo)
     for m in range(0, len(pos[:,1])):
         stretch2[m,:] = GetXYZ(pos[m])
@@ -299,7 +305,8 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
 
     # TODO: implement the magnetic field strength as an argument
     ## NOTE: ZHAires and reference shower of Radio morphing are in magnetic coordinates (=> azimuth defined wrt to magnetic North): Antenna positions and azimuth given in simulations are defined by x axis pointing towards magnetic North
-    phigeo =0*np.pi/180. #2.72*np.pi/180.  # 182.66#; (ie pointing 2.66 degrees East from full
+    ## But input and output shall be in geographic ccordinates
+    phigeo =2.72*np.pi/180.  # (ie pointing 2.72 degrees East from full
                           # North) from simulations inputfile %
                           # In both EVA & Zhaires, North = magnetic North
     thetageo =(180.-27.05)*np.pi/180. # 152.95*np.pi/180. #27.05*np.pi/180.
