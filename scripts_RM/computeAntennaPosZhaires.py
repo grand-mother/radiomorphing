@@ -47,7 +47,7 @@ def computeAntennaPos(zenz,azz,decay,dist_toxmax,dist_fromxmax):
   d = dist_fromxmax*np.tan(max_ang) # old: cone opens at Xmax
   step = d/20.   # 20 antennas per arm (160 in total)
   #step = 25   #AZ setup
-  print 'Inside/On/close by: Antenna step = ',step, ' width of cone at ', dist_fromxmax, 'm distance to Xmax =', d , ' size of Ch.cone ',  dist_fromxmax*np.tan(1.4*deg2rad), ' former size of cone ', dist_fromxmax*np.tan(max_ang)
+  #print 'Inside/On/close by: Antenna step = ',step, ' width of cone at ', dist_fromxmax, 'm distance to Xmax =', d , ' size of Ch.cone ',  dist_fromxmax*np.tan(1.4*deg2rad), ' former size of cone ', dist_fromxmax*np.tan(max_ang)
   
   ### add a few antenna outside that ring, to be consistent with cone selection, 3 antennas added
   d2= (dist_toxmax+dist_fromxmax)*np.tan(max_ang) # new: cone opens at decay point, like in cone selection
@@ -82,7 +82,7 @@ def computeAntennaPos(zenz,azz,decay,dist_toxmax,dist_fromxmax):
 
   	file.write('AddAntenna {0} {1} {2}\n'.format(xyz[0],xyz[1],xyz[2]))
   	
-    for i in np.arange(1,4):
+  for i in np.arange(1,4):
       for j in np.arange(8):
 
         xyz0 = (d+ i*step2) *(np.cos(j/4.0*np.pi)*vxB+np.sin(j/4.0*np.pi)*vxvxB) # distances between the antennas on one arm =25m
