@@ -117,7 +117,8 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
 
     #### Finding the Neighbours:  In principal one would like to check which star shape pattern are the closest etc.
     # it reads in all star shape pattern positions from the simulations you hand over 
-    positions_sims=np.zeros([len(sims),160,3])
+    number_antennas=184
+    positions_sims=np.zeros([len(sims),number_antennas,3])
     #print("Attention: read-in fixed to 160 antennas max. - to be fixed at some point")
     for i in np.arange(0,len(sims)): # loop over simulated antenna positions
 
@@ -309,7 +310,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
         
         #print d0, d1
 
-        if (d0 > 120).any() or (d1 > 120).any():
+        if (d0 > number_antennas).any() or (d1 > number_antennas).any():
             print "########  desired antenna position outside region in which interpolation works, no 4 neighbours.... antenna at desired position ", b, ' at ',  positions[b], " skipped" 
             continue
         try:
@@ -810,7 +811,7 @@ def process(sim_dir, shower, antennas, out_dir):
     """
     # Rescale the simulated showers to the requested one
     #print "ATTENTION scaling commented"
-    scale(sim_dir, **shower)
+    scale(sim_dir,  **shower)
 
     # interpolate the traces.
     interpolate(antennas, sim_dir, out_dir, shower["zenith"], shower["azimuth"], shower["injection_height"],shower["altitude"])
