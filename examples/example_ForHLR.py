@@ -134,6 +134,7 @@ print "path to sim " , sim_dir
 #print " time needed for copy :", t1-t0
     
 particle_list=[22.0, 11.0, -11.0, 111.0, 211.0, -211.0, 221.0, 321, -321] # 22:gamma, 11:e+-, 111:pi0, 211:pi+-, 211:eta, 321:kaon
+el_list=[22.0, 11.0, -11.0, 111.0] #'22.0':'gamma', '11.0': 'electron', '-11':positron,  '111.0': 'pi0'
 
 
 json_file=str(sys.argv[1])
@@ -233,6 +234,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     if float(event["decay"][i][0]) in particle_list: # just for valid particles 
                         pp=event["decay"][i][1] # momentum vector, second decay product: event["decay"][2][1] 
                         ep_array[i-1]=np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)# in GeV
+                        if float(event["decay"][i][0]) not in el_list: # correct for electromagneic fraction for hadronic particle
+                            ep_array[i-1]*= _getCaloE(ep_array[i-1]* 1.e-9) # energy handed over in EeV, returns fraction
                     if PRINT_OUT:
                         print "particle ", str(i), "PID:",event["decay"][i][0]," energy in EeV: ", ep_array[i-1]*1e-9 #np.sqrt(pp[0]**2+pp[1]**2+pp[2]**2)* 1.e-9 
                 ep= np.sum(ep_array)* 1.e-9 # GeV in EeV
@@ -243,7 +246,6 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #part_dic={'221.0':'eta','211.0': 'pi+', '-211.0': 'pi-','111.0': 'pi0', '22.0':'gamma', '13.0':'muon', '11.0': 'electron', '15.0':'tau', '16.0':'nu(t)', '321.0': 'K+', '-321.0': 'K-','130.0':'K0L', '310.0':'K0S','-323.0':'K*+'}
                 particle=int(np.argmax(ep_array) +1) # not forget about the inital neutrino and array start with 0
                 PID= float(event["decay"][int(np.argmax(ep_array) +1)][0])
-                el_list=[22.0, 11.0, -11.0, 111.0] #'22.0':'gamma', '11.0': 'electron', '-11':positron,  '111.0': 'pi0'
                 if PID in el_list:
                     primary="electron"
                 else: # pion-like
