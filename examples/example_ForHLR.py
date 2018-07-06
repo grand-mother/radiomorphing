@@ -88,6 +88,34 @@ def irods_upload(src1, src2, dst, maxtrials, wait):
 #####################################################################
 
 
+#####################################################################
+def _getCaloE(energy):
+    # correct energy for electromagnetic energy in case of hadronic primary
+    #hand over energy in EeV
+    #parametrisation just valid from 100Pev=0.1EeV to 100EeV=100EeV
+    
+    ## iron
+    #a=0.978
+    #b=0.0918
+    #c=0.1557
+    
+    #  proton primary -- pion
+    a=0.968
+    b=0.03804
+    c=0.2223
+    
+    if energy < 0.1: # in EeV
+        energy = 0.1
+    if energy > 100.: # in EeV
+        energy = 100
+    
+    Ecal=(a-b*np.power(energy,-c)) # fraction of energy going into electromagnetic component
+        
+    return Ecal
+
+#####################################################################
+
+
 ''' call that script via: python example.py *json path_to_TMP
     It will read in the information in the jso-file, event-by-event- and convert it to the nessary format of input for the radio morphing.
     For every event it creates a subfolder in $TMP/InterpolatedSignals/ having the name set by the event-tag for a later identification of the event. 
