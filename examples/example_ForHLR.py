@@ -141,7 +141,7 @@ EARTH_RADIUS=6370949. #m
 ## Settings of the radiomorphing
 data_dir = join(root_dir, "examples", "data") # will be in shared storage $PROJECT
 #simref_dir = join(data_dir, "GrandEventADetailed2") # will be copied from $PROJECT to $TMP, scaled_Evet* can be stored there since it will be overwritten for each event
-simref_dir = join(data_dir, "Plus01EeV925_40deg_1700m") # will be copied from $PROJECT to $TMP, scaled_Evet* can be stored there since it will be overwritten for each event
+simref_dir = join(data_dir, "NewIndexPlus_01_915_40_RASPASSelectron_1700") # will be copied from $PROJECT to $TMP, scaled_Evet* can be stored there since it will be overwritten for each event
 
 # ATTENTION: set here the path to the temporary storage at evry core, for testing set to test_dir created
 tmp_dir=sys.argv[2] #join(root_dir, "examples", "test_temp") # "$TMP" at core
@@ -151,7 +151,7 @@ run=sys.argv[3]
 if not os.path.exists(tmp_dir): # later this is nit necessary with $TMP
     os.makedirs(tmp_dir)
     print "PATH to TMP ", tmp_dir 
-sim_dir=join(tmp_dir, "Plus01EeV925_40deg_1700m") # local copy of refernce shower at $TMP, plus folder which will contain the scaled traces 
+sim_dir=join(tmp_dir, "NewIndexPlus_01_915_40_RASPASSelectron_1700") # local copy of refernce shower at $TMP, plus folder which will contain the scaled traces 
 
 
 #t0=time.time()
@@ -349,6 +349,8 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 radiomorphing.process(sim_dir, shower, antennas, out_dir)
                 
                 
+                
+                
 
 
                 
@@ -369,13 +371,14 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                     try:
                         shutil.move(cvjson_file, structure)
                     except IOError, shutil.Error: 
+                        print "json file couldnt be moved to ", structure
                         pass
                             
                     if PRINT_OUT:
                         print "Move json file "+     str(event["tag"])+".voltage.json"       +" moved to ",    structure
             
                 
-                
+                # tar.gz for traces (electric field and volages)
                 import tarfile
                 tar_name= join(tmp_dir, "InterpolatedSignals", str(event["tag"])+".tgz")
                 tar = tarfile.open(tar_name, "w:gz")
@@ -389,34 +392,38 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 try:    
                     shutil.move(tar_name, structure) 
                 except: 
+                    print "tgz file couldnt be moved to ", structure
                     pass
                 #remove output folder
-                try:
-                    shutil.rmtree(out_dir)
-                except:
-                    pass
+                #try:
+                    #shutil.rmtree(out_dir)
+                #except:
+                    #pass
                 
  
                 
                 #### Upload to iRODS: write a shell script and start it
- 
- 
-                UPLOAD=1
                 if UPLOAD==1:
-                    tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                    #tgzfile=structure+"/"+str(event["tag"])+".tgz"
+                    #print "tgzfile ", tgzfile
+                    #jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                    #print "jfile ", jfile
+                    
+                    #trz to upload directly from tmp folder
+                    tgzfile=out_dir+".tgz"
                     print "tgzfile ", tgzfile
-                    jfile=structure+"/"+str(event["tag"])+".voltage.json"
+                    jfile=out_dir+".voltage.json"
                     print "jfile ", jfile
                 
                     
                     # set up folder system in irods 
-                    folderiRod=join("grand/sim",run,"output_fh1_run2", folder1, folder2, folder3,  folder4) 
+                    folderiRod=join("grand/sim",run,"output_fh1_test", folder1, folder2, folder3,  folder4) 
 
                     
                     # creating directories. This is blocking until it succeeds.
                     # It will retry at most 5 times and will wait 6s between trials.
                     try:
-                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_run2", folder1, folder2, folder3,  folder4)
+                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_test", folder1, folder2, folder3,  folder4)
                     except:
                         print "failed creating ", str(folderiRod)
 
