@@ -134,7 +134,7 @@ import radiomorphing
 import retro
 
 PRINT_OUT=False
-
+UPLOAD=True
 
 EARTH_RADIUS=6370949. #m
 
