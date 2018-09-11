@@ -232,19 +232,24 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
 
         
         ###ANGLES
-        theta = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
-        if PRINT_OUT:
-            print "theta: ", theta
-        #orthogonal projection of v onto flat plane to get the azimuth 
-        x=np.array([1.,0.,0.]) #NS
-        y=np.array([0.,1.,0.]) #EW
-        proj_v= np.dot(v,x)*x + np.dot(v,y)*y
-#        print proj_v
-        azimuth = np.degrees(np.arccos(np.dot(proj_v, x))) # azimuth in GRAND conv., rt NORTH
-        if proj_v[1]<0.: # y component of projection negativ, means azimuth >180deg
-            azimuth = 360.-azimuth
-        if PRINT_OUT:
-            print "azimuth: ", azimuth
+        #theta = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
+        #if PRINT_OUT:
+            #print "theta: ", theta
+        ##orthogonal projection of v onto flat plane to get the azimuth 
+        #x=np.array([1.,0.,0.]) #NS
+        #y=np.array([0.,1.,0.]) #EW
+        #proj_v= np.dot(v,x)*x + np.dot(v,y)*y
+##        print proj_v
+        #azimuth = np.degrees(np.arccos(np.dot(proj_v, x))) # azimuth in GRAND conv., rt NORTH
+        #if proj_v[1]<0.: # y component of projection negativ, means azimuth >180deg
+            #azimuth = 360.-azimuth
+        #if PRINT_OUT:
+            #print "azimuth: ", azimuth
+            
+        #v = rot_mag_north(- v, GEOMAGNET[2]*np.pi/180) #ZhAireS convention, but here json antenna already in GEO coord.
+	azimuth = np.arctan2(v[1], v[0]) * 180 / np.pi
+	if azimuth>=360.: azimuth=azimuth-360.
+	zenith = np.arccos(v[2]) * 180 / np.pi    
         
         
         #### Neutrino energy - of the regenerated neutrino, not the primary one
@@ -326,7 +331,7 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
                 #folder3="Z"+str(int(event["tau_at_decay"][5][0]))
                 #folder4="A"+str(int(event["tau_at_decay"][5][1]))
                 # following the naming of the tag
-                structure=join(run+"_run3_hack_test", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
+                structure=join(run+"_run3", folder1, folder2, folder3, folder4 ) #"{:1.0e}".format(int(nu_energy*1e18))
                 if PRINT_OUT:
                     print structure
                 structure=join(data_dir, structure)
@@ -403,27 +408,27 @@ for event in EventIterator(json_file):#"events-flat.json"): #json files contains
  
                 
                 #### Upload to iRODS: write a shell script and start it
-                if UPLOAD==1:
-                    #tgzfile=structure+"/"+str(event["tag"])+".tgz"
-                    #print "tgzfile ", tgzfile
-                    #jfile=structure+"/"+str(event["tag"])+".voltage.json"
-                    #print "jfile ", jfile
-                    
-                    #trz to upload directly from tmp folder
-                    tgzfile=out_dir+".tgz"
+                if UPLOAD:
+                    tgzfile=structure+"/"+str(event["tag"])+".tgz"
                     print "tgzfile ", tgzfile
-                    jfile=out_dir+".voltage.json"
+                    jfile=structure+"/"+str(event["tag"])+".voltage.json"
                     print "jfile ", jfile
+                    
+                    ##trz to upload directly from tmp folder -> leads to failure for upload in waiting phase
+                    #tgzfile=out_dir+".tgz"
+                    #print "tgzfile ", tgzfile
+                    #jfile=out_dir+".voltage.json"
+                    #print "jfile ", jfile
                 
                     
                     # set up folder system in irods 
-                    folderiRod=join("grand/sim",run,"output_fh1_test", folder1, folder2, folder3,  folder4) 
+                    folderiRod=join("grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4) 
 
                     
                     # creating directories. This is blocking until it succeeds.
                     # It will retry at most 5 times and will wait 6s between trials.
                     try:
-                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1_test", folder1, folder2, folder3,  folder4)
+                        irods_retry(irods_makedirs, 5, 6., "grand/sim",run,"output_fh1", folder1, folder2, folder3,  folder4)
                     except:
                         print "failed creating ", str(folderiRod)
 
