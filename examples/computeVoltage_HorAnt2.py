@@ -6,8 +6,8 @@ import math
 import numpy as np
 #import pylab as pl
 
-wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
-#wkdir = './'
+#wkdir='/project/fh1-project-huepra/qc8087/radiomorphing/examples/'
+wkdir = './'
 
 import linecache
 from scipy.fftpack import rfft, irfft, rfftfreq
@@ -362,7 +362,6 @@ def inputfromjson(path,json_file):
     showerID = str(path.split('/')[-1])
     if not showerID:
         showerID = str(path.split('/')[-2])
-
     # find that shower in the json file
     event = [evt for evt in EventIterator(json_file) if evt["tag"]==showerID][0]
 
@@ -377,16 +376,23 @@ def inputfromjson(path,json_file):
 
     ### ANGLES
     v=event["tau_at_decay"][3]# shower direction, assuming decay products strongly forward beamed
-    zenith_sim = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
-    #print "theta: ", zenith_sim
-    #orthogonal projection of v onto flat plane to get the azimuth
-    x=np.array([1.,0.,0.]) #NS
-    y=np.array([0.,1.,0.]) #EW
-    proj_v= np.dot(v,x)*x + np.dot(v,y)*y
-    azimuth_sim = np.degrees(np.arccos(np.dot(proj_v, x))) # azimuth in GRAND conv., rt NORTH
-    if proj_v[1]<0.: # y component of projection negativ, means azimuth >180deg
-        azimuth_sim = 360.-azimuth_sim
-    #print "azimuth: ", azimuth_sim
+    #zenith_sim = np.degrees(np.arccos(np.dot(v, decay_pos) / np.linalg.norm(decay_pos))) # zenith in GRAND conv.
+    ##print "theta: ", zenith_sim
+    ##orthogonal projection of v onto flat plane to get the azimuth
+    #x=np.array([1.,0.,0.]) #NS
+    #y=np.array([0.,1.,0.]) #EW
+    #proj_v= np.dot(v,x)*x + np.dot(v,y)*y
+    #azimuth_sim = np.degrees(np.arccos(np.dot(proj_v, x))) # azimuth in GRAND conv., rt NORTH
+    #if proj_v[1]<0.: # y component of projection negativ, means azimuth >180deg
+        #azimuth_sim = 360.-azimuth_sim
+    ##print "azimuth: ", azimuth_sim
+
+    #v = rot_mag_north(- v, GEOMAGNET[2]*np.pi/180) #ZhAireS convention, but here json antenna already in GEO coord.
+    azimuth_sim = np.arctan2(v[1], v[0]) * 180 / np.pi
+    if azimuth_sim>=360.: azimuth_sim=azimuth_sim-360.
+    zenith_sim = np.arccos(v[2]) * 180 / np.pi
+    #print "azimuth, zenith ", azimuth_sim, zenith_sim
+
 
     ### ENERGY
     ep_array=np.zeros(len(event["decay"])-1)
@@ -489,6 +495,7 @@ def compute(opt_input,path, path_out, effective,zenith_sim, azimuth_sim, energy,
         if not showerID:
             showerID = str(path.split('/')[-2])
         ## Find that shower in the json file
+
         event = [evt for evt in EventIterator(json_file) if evt["tag"]==showerID][0]
         #log_event = EventLogger(path=json_file)
         
