@@ -77,23 +77,20 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo,thetageo,
     vxB = np.linalg.norm(vxB)/(np.linalg.norm(v)*np.linalg.norm(Bgeo))
     kAz = vxB/vxB_ref   
 
-
     h_ref=injh1
-    h=altitude #injh2 # actual altitude wrt sealevel at decay position of target position 
-    #%############## Height+Zenith, distance injection point to xmax rougly 8000m
-    primary1='electron'
+    h=altitude  # actual altitude wrt sealevel at decay position of target position 
+    #%############## Height+Zenith, distance injection point to xmax
+    primary1='electron' #hardcoded: reference primary 
     Xmax_primary1 = _getXmax(primary1, E1, zen1)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
     Xmax_height1, Xmax_distance1 = _dist_decay_Xmax(zen1, injh1, Xmax_primary1)# injh1=altitude for reference shower
 
-    #hx_ref = h_ref+Xmax_hor1*np.tan(0.5*np.pi-zen1) #   % Height at reference shower Xmax
     hx_ref = h_ref+Xmax_distance1*np.sin(0.5*np.pi-zen1) #   % Height at reference shower Xmax
     ac_ref = getCerenkovAngle(hx_ref)
     rho_ref = _getAirDensity(hx_ref)
 
-
     Xmax_primary2 = _getXmax(primary, E2, zen2)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
+
     Xmax_height2, Xmax_distance2 = _dist_decay_Xmax(zen2, altitude, Xmax_primary2) ## actually altitude counts not injection height
-    #hx = h+Xmax_hor2*np.tan(0.5*np.pi-zen2)#   % Height at target shower Xmax 
     hx = h+Xmax_distance2*np.sin(0.5*np.pi-zen2)#   % Height at target shower Xmax 
 
     ac = getCerenkovAngle(hx) 
@@ -112,8 +109,7 @@ def _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo,thetageo,
 
 def _scalingpulse(az1, zen1, az2, zen2,  phigeo, thetageo, l ,path,   kStretch, kE, kAz, kHeight): # hand over parameters from reference shower 1 and target shower 2, the number of the antenna in the star shape you would like to have  and all position of complete starshape (for strechting needed), the path to the folder containing the sim, and for now the frequencies (should be removed if one included the antenna response
 
-    #SCALING has to be done in Magnetic coordinate system, target azimuth corrected for that: az2-phigeo
-    #kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2-phigeo, zen2, injh2, 0.*np.pi/180., thetageo, altitude, primary)
+    #SCALING
     kAmp=kE*kAz*kHeight
     #if l==0:
        #print 'kStretch ', kStretch, ' kAmp ', kAmp,  ' kE ', kE, ' KAz ', kAz, ' kHeight ', kHeight
@@ -125,7 +121,7 @@ def _scalingpulse(az1, zen1, az2, zen2,  phigeo, thetageo, l ,path,   kStretch, 
  ################################################
 
     try:
-    ##read in full traces of antenna l: 0:time in ns, 1,2,3: vector field , 4,5,6: efield
+    ##read in full traces of antenna l: 0:time in ns, 1,2,3:: efield
         txt1 = load_trace(path, l)[:-2,:]
     except IOError:
         print("antenna ID ",str(int(l)), " file doesn't exist")
@@ -155,17 +151,16 @@ def _scalingpulse(az1, zen1, az2, zen2,  phigeo, thetageo, l ,path,   kStretch, 
 
     az=az1
     zen=zen1
-    # NOTE since refernce shower in magnetic coordinates (MAG) phigeo=0deg
-    B = np.array([np.cos(0.*np.pi/180.)*np.sin(inc), np.sin(0.*np.pi/180.)*np.sin(inc),np.cos(inc)]) 
+    B = np.array([np.cos(phigeo)*np.sin(inc), np.sin(phigeo)*np.sin(inc),np.cos(inc)]) 
     B=B/np.linalg.norm(B)
 
     v = np.array([np.cos(az)*np.sin(zen),np.sin(az)*np.sin(zen),np.cos(zen)]) 
     v=v/np.linalg.norm(v)
     #print v
 
-    vxB = np.cross(v,B) #np.array([v[1]*B[2]-v[2]*B[1],v[2]*B[0]-v[0]*B[2],v[0]*B[1]-v[1]*B[0]]) # crossproduct
+    vxB = np.cross(v,B)
     vxB = vxB/np.linalg.norm(vxB)
-    vxvxB = np.cross(v,vxB) #np.array([v[1]*vxB[2]-v[2]*vxB[1],v[2]*vxB[0]-v[0]*vxB[2],v[0]*vxB[1]-v[1]*vxB[0]])# crossproduct
+    vxvxB = np.cross(v,vxB) 
     vxvxB = vxvxB/np.linalg.norm(vxvxB)
     
     # rotation to showeframe
@@ -187,9 +182,9 @@ def _scalingpulse(az1, zen1, az2, zen2,  phigeo, thetageo, l ,path,   kStretch, 
     B=B/np.linalg.norm(B)
     v2 = np.array([np.cos(az2)*np.sin(zen2),np.sin(az2)*np.sin(zen2),np.cos(zen2)]) 
     v2=v2/np.linalg.norm(v2)
-    vxB2 = np.cross(v2,B) #np.array([v[1]*B[2]-v[2]*B[1],v[2]*B[0]-v[0]*B[2],v[0]*B[1]-v[1]*B[0]]) # crossproduct
+    vxB2 = np.cross(v2,B)
     vxB2 = vxB2/np.linalg.norm(vxB2)
-    vxvxB2 = np.cross(v2,vxB2) #np.array([v[1]*vxB[2]-v[2]*vxB[1],v[2]*vxB[0]-v[0]*vxB[2],v[0]*vxB[1]-v[1]*vxB[0]])# crossproduct
+    vxvxB2 = np.cross(v2,vxB2)
     vxvxB2 = vxvxB2/np.linalg.norm(vxvxB2)
     
     
@@ -208,9 +203,6 @@ def _scalingpulse(az1, zen1, az2, zen2,  phigeo, thetageo, l ,path,   kStretch, 
 def _stretchpos(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phigeo,  thetageo, positions, path, altitude, kStretch): # hand over parameters from reference shower 1 and target shower 2, the number of the antenna in the star shape you would like to have  and all position of complete starshape (for strechting needed), the path to the folder containing the sim, and for now the frequencies (should be removed if one included the antenna response
 
 
-
-#SCALING has to be done in Magnetic coordinate system, target azimuth corrected for that: az2-phigeo
-    #kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2-phigeo, zen2, injh2, 0.*np.pi/180., thetageo, altitude, primary)
 ###################################################
 #### stretching of positions
 ###############################
@@ -231,8 +223,7 @@ def _stretchpos(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phig
 
     
     # rotate into shower coordinates for preparation to get the strechted antenna position to compare to 
-    ### NOTE: since reference shower was simulated in magnetic coordinate system (MAG) phigeo=0deg and az1
-    GetUVW = UVWGetter(offinx,offiny,offinz, zen1, az1, 0.*np.pi/180., thetageo)
+    GetUVW = UVWGetter(offinx,offiny,offinz, zen1, az1, phigeo, thetageo)
     #get the radius and scale
     r= np.zeros([len(positions[:,1])])
     for i in np.arange(0,len(positions[:,1])):
@@ -240,18 +231,6 @@ def _stretchpos(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phig
         r[i]=mag(pos[i,:])*kStretch
         #print r[i]
       
-
-     
-     ##################################### 
-    ##if kStretch!=1.:
-    #r= np.zeros([len(positions[:,1])])
-    #for m in range(0, len(positions[:,1])):
-        ##print m, mag(pos[m,:])
-        #r[m]=mag(pos[m,:])*kStretch # just STRETCHING the radius of the rings: r=r*kStretch
-        ##print r[m], mag(pos[m,:])
-        
-
-
     # first rays are formed, depends on how star shapepattern was set up
     if np.linalg.norm(pos[6]-pos[5]) == 0.5*np.linalg.norm(pos[7]-pos[5]): 
             for n in range(0, angles): # second rings
@@ -262,7 +241,7 @@ def _stretchpos(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phig
  
 
     if np.linalg.norm(pos[6]-pos[5]) != 0.5*np.linalg.norm(pos[7]-pos[5]): # first rings are formed
-                for m in range(0, rings): #sencond rays
+                for m in range(0, rings): #second rays
                     for n in range(0, angles): # first rings
 
                         pos[m*angles+n,1 ]= r[m*angles]* np.cos(n*beta) # vxB
@@ -274,14 +253,13 @@ def _stretchpos(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phig
 ################## CALCULATION OF NEW POSITION VECTOR
     ### the new/target position vector of the star shape plane
     Xmax_primary = _getXmax(primary, E2, zen2)# approximation based on values from plots for gamma (=e) and protons (=pi) # g/cm2
-    #print("xmax value " , Xmax_primary)
-    Xmax_height, Xmax_distance = _dist_decay_Xmax(zen2, altitude, Xmax_primary)# 8000.# d_prime: distance from decay point to Xmax, altitude counts here, not injection height
-    decay=np.array([0.,0.,injh2]) # ==: decay position as defined in zhaires sim, from DANTOn files
+
+    Xmax_height, Xmax_distance = _dist_decay_Xmax(zen2, altitude, Xmax_primary)# d_prime: distance from decay point to Xmax, altitude counts here, not injection height
+    decay=np.array([0.,0.,injh2]) # ==: decay position as defined in zhaires sim, from DANTON files
 
     # new position vector:
     v2 = np.array([np.cos(az2)*np.sin(zen2),np.sin(az2)*np.sin(zen2),np.cos(zen2)]) 
     v2=v2/np.linalg.norm(v2)
-    #x2= decay - v2 * (Xmax_distance+ dist1) # to account for going from Zhaires to GRAND conv
     x2= decay + v2 * (Xmax_distance+ dist1) # to account for going from Zhaires to GRAND conv
     
 
@@ -305,7 +283,6 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
                E2, zen2, az2, injh2, altitude):
     """Scale the simulated traces of a run to the shower parameters
     """
-
     # TODO: implement the magnetic field strength as an argument
     ## NOTE: ZHAires and reference shower of Radio morphing are in magnetic coordinates (=> azimuth defined wrt to magnetic North): Antenna positions and azimuth given in simulations are defined by x axis pointing towards magnetic North
     ## But input and output shall be in geographic ccordinates
@@ -358,11 +335,8 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
     #print directory
     
     ### get the scaling factors
-    ### NOTE SCALING has to be done in Magnetic coordinate system, target azimuth corrected for that: az2-phigeo
-    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2-phigeo, zen2, injh2, 0.*np.pi/180., thetageo, altitude, primary)
-
-
-
+    kStretch, kE, kAz, kHeight = _scalingfactors(E1, az1, zen1, injh1, E2, az2, zen2, injh2, phigeo, thetageo, altitude, primary)#, xmax)
+        
     end = positions.shape[0]
     #### loop over all antenna positions, outer positions should be skipped
     #### since then the interpolation doesnt work anymore (4 neighbours needed
@@ -382,7 +356,6 @@ def _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
 
     
     pos_new=_stretchpos(dist1, E1, az1, zen1, injh1, E2, az2, zen2, injh2, primary, phigeo,  thetageo,  positions, path, altitude, kStretch)
-    #pos_new=_stretchpos(positions)  
     #print "scaled traces saved like this: {:}/a0.trace".format(directory)
 
     # Save as well the posiion file somewhere if you scale the complete star
@@ -413,7 +386,7 @@ def scale(sim_dir, primary, energy, zenith, azimuth, injection_height, altitude)
             zen1 = 180. - zen1
             az1 = 180. + az1
 
-            
             # Scale this run
             _scale_run(sim_dir, run, primary, E1, zen1, az1, injh1, dist1,
                        energy, zenith, azimuth, injection_height, altitude)
+

@@ -776,7 +776,7 @@ def interpolate(path0, path1, path2, zenith=None, azimuth=None,injection_height=
                 
         FILE = open(path2+ '/a'+str(b)+'.trace', "w+" )
         for i in range( 0, len(xnew_desiredx) ):
-
+                print tracedes_desiredx[i]
                 print >>FILE,"%3.2f %1.5e %1.5e %1.5e" % (xnew_desiredx[i], tracedes_desiredx[i], tracedes_desiredy[i], tracedes_desiredz[i])
 
         FILE.close()
