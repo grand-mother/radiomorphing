@@ -1,15 +1,10 @@
-# Radiomorphing
+# Radio Morphing
 Welcome to Radio Morphing!
 
 These people made that tool amazing:
 W. Carvalho, K. de Vries, O. Martineau, K. Kotera V. Niess, M. Tueros, A. Zilles
 
-Details of the methods can be found in <RM_PUBLICATION> coming soon
-
-
-===== This version is a draft ====
-
-===== beta users should already find all needed information to run RM ====
+Details of the methods can be found in [arXiv:1811:01750](https://arxiv.org/abs/1811.01750).
 
 
 
@@ -41,7 +36,6 @@ The script will read in the antenna positions and electric field traces of the e
 The example reference shower is an air shower induced by an electron of an energy of 1EeV and an height of 2000m above sealevel. The propagation direction is given by a zenith of 89.5deg (upward-going) and an azimuth of 0deg.
 
 ## Documentation
-
 See the [example.py](examples/example.py) script for an example of usage.
 
 The basis of the calclulation is an simulated reference shower. At the moment just results of ZHAireS simulations can be read in. A direct usage of CoREAS output will be integrated asap.
@@ -75,7 +69,6 @@ to be handed over as in [example.py](https://github.com/grand-mother/radiomorphi
 
 
 ### Setting up own study/Producing your own reference shower
-
 To produce the reference shower, antenna position following a star-shape pattern in shower coordinates  (vxB, vxvxB) have to be calculated. Each star-shape pattern forms one plane and should be positioned in a fixed distance to the Xmax of the simulated shower. Several of these planes in different fixed distances to Xmac should be simulated. 
 Therefor, one can use [ZHAireS](https://arxiv.org/abs/1107.1189) or [CoREAS](https://arxiv.org/abs/1301.2132v1) as long as the following procedure is respected:
 
@@ -101,6 +94,7 @@ Therefor, one can use [ZHAireS](https://arxiv.org/abs/1107.1189) or [CoREAS](htt
 ## Possible future projects
  - hand over magnetic field configuration as parameter
  - include CoREAS output directly as possible input 
+ - decouple Askaryan and Geomagnetic component
  
 
 ## License
